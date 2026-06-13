@@ -52,36 +52,6 @@ def load_dashboard_data():
             return json.load(f)
     return None
 
-@st.cache_data
-def load_competition_data():
-    """Dynamically loads and aggregates competition distance data from CSVs."""
-    store_path = os.path.join(BASE_DIR, "data", "store.csv")
-    train_path = os.path.join(BASE_DIR, "data", "train_store_cleaned.csv")
-    
-    # Fallback if the cleaned csv is missing
-    if not os.path.exists(train_path):
-        train_path = os.path.join(BASE_DIR, "data", "train_dataset.csv")
-
-    if os.path.exists(train_path) and os.path.exists(store_path):
-        try:
-            # Memory-efficient loading
-            df = pd.read_csv(train_path, usecols=['Store', 'Sales'], low_memory=False)
-            store_df = pd.read_csv(store_path, usecols=['Store', 'CompetitionDistance'])
-            
-            df = df.merge(store_df, on='Store', how='inner')
-            
-            # Create Distance Buckets
-            bins = [0, 1000, 5000, 10000, float('inf')]
-            labels = ['< 1km', '1-5km', '5-10km', '> 10km']
-            df['Comp_Bucket'] = pd.cut(df['CompetitionDistance'], bins=bins, labels=labels)
-            
-            # Aggregate Average Sales
-            comp_dist = df.groupby('Comp_Bucket', observed=False)['Sales'].mean().reset_index()
-            return comp_dist
-        except Exception:
-            return None
-    return None
-
 def apply_plotly_dark_theme(fig):
     """Applies a consistent enterprise dark theme to all Plotly figures."""
     fig.update_layout(
@@ -103,7 +73,10 @@ st.markdown("Deep dive into the operational metrics and store performance across
 
 # Load Data
 data = load_dashboard_data()
-comp_data = load_competition_data()
+if data:
+    comp_data = pd.DataFrame(data.get("competition", []))
+else:
+    comp_data = None
 
 if data is None:
     st.error("⚠️ Dashboard data could not be found. Please ensure `dashboard_data.json` exists.")
@@ -199,7 +172,7 @@ with col_top:
     st.plotly_chart(fig_top, use_container_width=True)
 
 with col_comp:
-    if comp_data is not None:
+    if comp_data is not None and not comp_data.empty:
         fig_comp = px.bar(
             comp_data, 
             x="Comp_Bucket", 
@@ -211,7 +184,7 @@ with col_comp:
         fig_comp = apply_plotly_dark_theme(fig_comp)
         st.plotly_chart(fig_comp, use_container_width=True)
     else:
-        st.warning("⚠️ Competition data unavailable (requires CSVs).")
+        st.warning("⚠️ Competition data missing from dashboard_data.json.")
 
 # --- Weekly Seasonality ---
 st.markdown("<hr style='border: 1px solid #32324E'>", unsafe_allow_html=True)
@@ -239,8 +212,8 @@ fig_dow.add_trace(go.Scatter(
 
 fig_dow.update_layout(
     title="Sales Revenue vs Customer Footfall by Day",
-    yaxis=dict(title="Average Sales (€)", titlefont=dict(color="#8B5CF6"), tickfont=dict(color="#8B5CF6")),
-    yaxis2=dict(title="Average Customers", titlefont=dict(color="#F59E0B"), tickfont=dict(color="#F59E0B"), overlaying="y", side="right")
+    yaxis=dict(title=dict(text="Average Sales (€)", font=dict(color="#8B5CF6")), tickfont=dict(color="#8B5CF6")),
+    yaxis2=dict(title=dict(text="Average Customers", font=dict(color="#F59E0B")), tickfont=dict(color="#F59E0B"), overlaying="y", side="right")
 )
 fig_dow = apply_plotly_dark_theme(fig_dow)
 st.plotly_chart(fig_dow, use_container_width=True)

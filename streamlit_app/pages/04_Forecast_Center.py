@@ -35,14 +35,35 @@ This dashboard uses the project's custom Gradient Boosting forecasting model tra
 Current forecast simulations are generated using the validated model logic and engineered features developed during this project.
 """)
 
+import json
+import os
+
+@st.cache_data
+def load_dashboard_data():
+    json_path = os.path.join("data", "dashboard_data.json")
+    if not os.path.exists(json_path):
+        json_path = os.path.join("..", "data", "dashboard_data.json")
+    if os.path.exists(json_path):
+        with open(json_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+data = load_dashboard_data()
+
 # --- Dataset Summary Card ---
 st.subheader("Dataset Summary")
 with st.container():
     ds_col1, ds_col2, ds_col3, ds_col4 = st.columns(4)
-    ds_col1.metric("Raw Records", "1,017,209")
-    ds_col2.metric("Cleaned Records", "844,392")
-    ds_col3.metric("Stores", "1,115")
-    ds_col4.metric("Date Range", "Jan 2013 – Jul 2015")
+    if data:
+        ds_col1.metric("Raw Records", "1,017,209")
+        ds_col2.metric("Cleaned Records", f"{data['overview']['total_records']:,}")
+        ds_col3.metric("Stores", f"{data['overview']['num_stores']:,}")
+        ds_col4.metric("Date Range", "Jan 2013 – Jul 2015")
+    else:
+        ds_col1.metric("Raw Records", "1,017,209")
+        ds_col2.metric("Cleaned Records", "844,392")
+        ds_col3.metric("Stores", "1,115")
+        ds_col4.metric("Date Range", "Jan 2013 – Jul 2015")
 st.divider()
 
 # --- Model Information Card ---
@@ -52,9 +73,14 @@ with st.container():
     info_col1.metric("Model", "Custom GBM")
     info_col2.metric("Train Rows", "669,308")
     info_col3.metric("Test Rows", "175,084")
-    info_col4.metric("MAE", "745.88")
-    info_col5.metric("RMSE", "1,091.35")
-    info_col6.metric("R²", "0.8724")
+    if data:
+        info_col4.metric("MAE", f"{data['models']['xgboost']['mae']}")
+        info_col5.metric("RMSE", f"{data['models']['xgboost']['rmse']}")
+        info_col6.metric("R²", f"{data['models']['xgboost']['r2']}")
+    else:
+        info_col4.metric("MAE", "745.88")
+        info_col5.metric("RMSE", "1,091.35")
+        info_col6.metric("R²", "0.8724")
 st.divider()
 
 # --- Feature Importance & Promotion Lift ---

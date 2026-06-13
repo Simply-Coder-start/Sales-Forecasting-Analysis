@@ -288,6 +288,56 @@ dashboard["feature_importance"] = {
     ],
 }
 
+# ── 12. Holiday Impact & Competition ─────────────────────────────────────────
+print("Computing holiday impact and competition...")
+state_hol_s = defaultdict(list)
+school_hol_s = defaultdict(list)
+comp_dist_s = defaultdict(list)
+
+# Load store competition
+store_comp = {}
+store_path = os.path.join(DATA_DIR, "store.csv")
+if os.path.exists(store_path):
+    with open(store_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            dist_str = r.get("CompetitionDistance", "0")
+            if not dist_str: dist_str = "0"
+            store_comp[r["Store"]] = safe_float(dist_str)
+
+for r in all_rows:
+    s = safe_int(r["Sales"])
+    if r.get("Open", "1") == "0": continue
+    
+    sh = "None"
+    if r.get("StateHoliday_a") == "1": sh = "Public Holiday"
+    elif r.get("StateHoliday_b") == "1": sh = "Easter"
+    elif r.get("StateHoliday_c") == "1": sh = "Christmas"
+    state_hol_s[sh].append(s)
+    
+    sch = "School Holiday" if r.get("SchoolHoliday") == "1" else "No School Holiday"
+    school_hol_s[sch].append(s)
+    
+    dist = store_comp.get(r["Store"], 0)
+    if dist <= 1000: b = "< 1km"
+    elif dist <= 5000: b = "1-5km"
+    elif dist <= 10000: b = "5-10km"
+    else: b = "> 10km"
+    comp_dist_s[b].append(s)
+
+dashboard["holidays"] = {
+    "state": [{"StateHoliday": k, "Sales": round(mean(v), 0)} for k,v in state_hol_s.items()],
+    "school": [{"SchoolHoliday_Str": k, "Sales": round(mean(v), 0)} for k,v in school_hol_s.items()]
+}
+
+buckets = ["< 1km", "1-5km", "5-10km", "> 10km"]
+comp_list = []
+for b in buckets:
+    if b in comp_dist_s:
+        comp_list.append({"Comp_Bucket": b, "Sales": round(mean(comp_dist_s[b]), 0)})
+        
+dashboard["competition"] = comp_list
+
 # Save JSON
 print(f"Saving dashboard data to {OUTPUT_FILE}...")
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

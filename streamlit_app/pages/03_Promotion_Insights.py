@@ -18,40 +18,12 @@ def load_dashboard_data():
             return json.load(f)
     return None
 
-@st.cache_data
-def load_and_aggregate_extra_data():
-    train_path = os.path.join("data", "train_dataset.csv")
-    store_path = os.path.join("data", "store.csv")
-    
-    if os.path.exists(train_path) and os.path.exists(store_path):
-        # Sample or chunk to prevent excessive memory usage if needed, but Streamlit caching should handle it once
-        train_df = pd.read_csv(train_path, low_memory=False)
-        store_df = pd.read_csv(store_path)
-        
-        df = train_df.merge(store_df, on='Store', how='left')
-        df = df[df['Open'] == 1] # Only consider open stores
-        
-        # State Holiday
-        df['StateHoliday'] = df['StateHoliday'].astype(str).replace({'0': 'None', 'a': 'Public Holiday', 'b': 'Easter', 'c': 'Christmas'})
-        state_holiday = df.groupby('StateHoliday')['Sales'].mean().reset_index()
-        
-        # School Holiday
-        df['SchoolHoliday_Str'] = df['SchoolHoliday'].replace({0: "No School Holiday", 1: "School Holiday"})
-        school_holiday = df.groupby('SchoolHoliday_Str')['Sales'].mean().reset_index()
-        
-        # Competition buckets
-        bins = [0, 1000, 5000, 10000, float('inf')]
-        labels = ['< 1km', '1-5km', '5-10km', '> 10km']
-        df['Comp_Bucket'] = pd.cut(df['CompetitionDistance'], bins=bins, labels=labels)
-        comp_dist = df.groupby('Comp_Bucket')['Sales'].mean().reset_index()
-        
-        return state_holiday, school_holiday, comp_dist
-    return None, None, None
-
 data = load_dashboard_data()
-state_holiday, school_holiday, comp_dist = load_and_aggregate_extra_data()
 
 if data:
+    state_holiday = pd.DataFrame(data.get("holidays", {}).get("state", []))
+    school_holiday = pd.DataFrame(data.get("holidays", {}).get("school", []))
+    comp_dist = pd.DataFrame(data.get("competition", []))
     st.divider()
     
     # 1. Monthly Sales Trend
@@ -111,26 +83,29 @@ if data:
     st.subheader("4. Holiday Impact")
     col_hol1, col_hol2 = st.columns(2)
     
-    if state_holiday is not None and school_holiday is not None:
-        fig_state = px.bar(state_holiday, x="StateHoliday", y="Sales", title="State Holiday Comparison", template="plotly_dark", color="StateHoliday")
-        fig_school = px.bar(school_holiday, x="SchoolHoliday_Str", y="Sales", title="School Holiday Comparison", template="plotly_dark", color="SchoolHoliday_Str", labels={"SchoolHoliday_Str": "School Holiday"})
-        
-        with col_hol1:
+    with col_hol1:
+        if not state_holiday.empty:
+            fig_state = px.bar(state_holiday, x="StateHoliday", y="Sales", title="State Holiday Comparison", template="plotly_dark", color="StateHoliday")
             st.plotly_chart(fig_state, use_container_width=True)
-        with col_hol2:
+        else:
+            st.warning("⚠️ State Holiday data missing in dashboard_data.json")
+            
+    with col_hol2:
+        if not school_holiday.empty:
+            fig_school = px.bar(school_holiday, x="SchoolHoliday_Str", y="Sales", title="School Holiday Comparison", template="plotly_dark", color="SchoolHoliday_Str", labels={"SchoolHoliday_Str": "School Holiday"})
             st.plotly_chart(fig_school, use_container_width=True)
-    else:
-        st.warning("Holiday data unavailable (requires CSVs).")
-        
+        else:
+            st.warning("⚠️ School Holiday data missing in dashboard_data.json")
+            
     st.divider()
 
     # 5. Competition Analysis
     st.subheader("5. Competition Analysis")
-    if comp_dist is not None:
+    if not comp_dist.empty:
         fig_comp = px.bar(comp_dist, x="Comp_Bucket", y="Sales", title="Average Sales by Competition Distance", template="plotly_dark", color="Comp_Bucket", labels={"Comp_Bucket": "Distance Bucket"})
         st.plotly_chart(fig_comp, use_container_width=True)
     else:
-        st.warning("Competition data unavailable (requires CSVs).")
+        st.warning("⚠️ Competition data missing in dashboard_data.json")
 
     st.divider()
 
