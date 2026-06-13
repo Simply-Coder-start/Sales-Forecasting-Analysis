@@ -1,0 +1,27 @@
+# Datasets and large files
+data/
+*.csv
+*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints
+
+# Streamlit
+.streamlit/
+
+# Antigravity/Gemini AI
+.gemini/
+
+# OS generated files
+.DS_Store
+Thumbs.db
