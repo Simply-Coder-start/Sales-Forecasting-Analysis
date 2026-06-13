@@ -131,5 +131,4 @@ Sales-Forecasting-Analysis/
 ---
 
 ## 👨‍💻 Author Section
-Developed as a Final-Year BCA Project.
 Built with ❤️ and pure Python.
