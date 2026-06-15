@@ -23,9 +23,9 @@ import math
 from collections import defaultdict, Counter
 from datetime import datetime
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 INPUT_FILE = os.path.join(DATA_DIR, "train_store_cleaned.csv")
-OUTPUT_HTML = os.path.join(DATA_DIR, "eda_report.html")
+OUTPUT_HTML = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "reports", "eda_report.html")
 
 # ── Load data ────────────────────────────────────────────────────────────────
 print("Loading cleaned dataset...")

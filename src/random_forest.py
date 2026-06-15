@@ -164,7 +164,7 @@ class VanillaRandomForestRegressor:
 # SCRIPT EXECUTION
 # ──────────────────────────────────────────────────────────────────────────────
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 TRAIN_FILE = os.path.join(DATA_DIR, "train_dataset.csv")
 TEST_FILE = os.path.join(DATA_DIR, "test_dataset.csv")
 REPORT_FILE = os.path.join(DATA_DIR, "random_forest_report.txt")

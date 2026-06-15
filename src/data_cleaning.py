@@ -23,7 +23,7 @@ import json
 from collections import Counter, defaultdict
 from datetime import datetime
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 INPUT_FILE = os.path.join(DATA_DIR, "train_store_merged.csv")
 
 # ──────────────────────────────────────────────────────────────────────────────

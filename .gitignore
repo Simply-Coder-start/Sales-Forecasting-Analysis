@@ -1,7 +1,9 @@
-# Datasets and large files
+# Datasets and large files (Ignored for GitHub size limits)
 data/
 *.csv
 *.json
+*.pkl
+models/
 
 # Python
 __pycache__/

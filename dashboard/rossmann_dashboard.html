@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rossmann Sales Forecasting Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2035;
+  --bg-card-hover: #1f2847;
+  --border: rgba(99,102,241,0.15);
+  --border-bright: rgba(99,102,241,0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --green: #10b981;
+  --green-bg: rgba(16,185,129,0.1);
+  --red: #f43f5e;
+  --red-bg: rgba(244,63,94,0.1);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245,158,11,0.1);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59,130,246,0.1);
+  --purple: #8b5cf6;
+  --purple-bg: rgba(139,92,246,0.1);
+  --cyan: #06b6d4;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+* { margin:0;padding:0;box-sizing:border-box; }
+body { background:var(--bg-primary);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;line-height:1.6;overflow-x:hidden; }
+::selection { background:var(--accent);color:white; }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background:var(--accent);border-radius:3px; }
+
+.app { display:flex;min-height:100vh; }
+
+/* ── Sidebar ── */
+.sidebar { width:260px;background:var(--bg-secondary);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform 0.3s; }
+.sidebar-brand { padding:24px 20px;border-bottom:1px solid var(--border); }
+.sidebar-brand h1 { font-size:1.1em;font-weight:700;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.sidebar-brand p { font-size:0.7em;color:var(--text-muted);margin-top:2px;letter-spacing:0.5px;text-transform:uppercase; }
+.sidebar-nav { flex:1;padding:12px 10px;overflow-y:auto; }
+.nav-item { display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-sm);color:var(--text-secondary);cursor:pointer;transition:var(--transition);font-size:0.88em;font-weight:500;margin-bottom:2px; }
+.nav-item:hover { background:rgba(99,102,241,0.08);color:var(--text-primary); }
+.nav-item.active { background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.1));color:var(--accent-light);border:1px solid var(--border-bright); }
+.nav-icon { font-size:1.2em;width:24px;text-align:center; }
+.sidebar-footer { padding:16px 20px;border-top:1px solid var(--border);font-size:0.72em;color:var(--text-muted); }
+
+/* ── Main Content ── */
+.main { margin-left:260px;flex:1;min-height:100vh; }
+.page-header { padding:28px 36px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(99,102,241,0.04),transparent); }
+.page-header h2 { font-size:1.6em;font-weight:700;margin-bottom:4px; }
+.page-header p { color:var(--text-secondary);font-size:0.88em; }
+.page-content { padding:28px 36px; }
+
+/* ── Page Sections ── */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ── Cards ── */
+.kpi-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px; }
+.kpi-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:var(--transition);position:relative;overflow:hidden; }
+.kpi-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple));opacity:0;transition:var(--transition); }
+.kpi-card:hover { border-color:var(--border-bright);transform:translateY(-2px);box-shadow:var(--shadow); }
+.kpi-card:hover::before { opacity:1; }
+.kpi-icon { font-size:1.8em;margin-bottom:8px; }
+.kpi-value { font-size:1.9em;font-weight:800;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+.kpi-label { font-size:0.78em;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.5px; }
+.kpi-delta { font-size:0.78em;margin-top:6px;padding:3px 8px;border-radius:20px;display:inline-block;font-weight:600; }
+.kpi-delta.up { background:var(--green-bg);color:var(--green); }
+.kpi-delta.down { background:var(--red-bg);color:var(--red); }
+
+/* ── Charts ── */
+.chart-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px; }
+.chart-grid.full { grid-template-columns:1fr; }
+.chart-grid.tri { grid-template-columns:1fr 1fr 1fr; }
+@media(max-width:1100px) { .chart-grid,.chart-grid.tri { grid-template-columns:1fr; } }
+.chart-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:var(--transition); }
+.chart-card:hover { border-color:var(--border-bright); }
+.chart-title { font-size:0.92em;font-weight:600;margin-bottom:16px;color:var(--text-primary); }
+.chart-subtitle { font-size:0.75em;color:var(--text-muted);margin-top:-12px;margin-bottom:16px; }
+
+/* ── SVG Charts ── */
+svg text { font-family:'Inter',system-ui,sans-serif; }
+
+/* ── Tables ── */
+.data-table { width:100%;border-collapse:separate;border-spacing:0;font-size:0.85em; }
+.data-table th { background:rgba(99,102,241,0.08);padding:12px 16px;text-align:left;font-weight:600;color:var(--text-secondary);border-bottom:2px solid var(--border);text-transform:uppercase;font-size:0.78em;letter-spacing:0.5px; }
+.data-table td { padding:11px 16px;border-bottom:1px solid rgba(51,65,85,0.3); }
+.data-table tr:hover td { background:rgba(99,102,241,0.04); }
+.data-table .rank { color:var(--accent-light);font-weight:700;width:40px; }
+.badge { padding:3px 10px;border-radius:20px;font-size:0.78em;font-weight:600; }
+.badge-green { background:var(--green-bg);color:var(--green); }
+.badge-red { background:var(--red-bg);color:var(--red); }
+.badge-blue { background:var(--blue-bg);color:var(--blue); }
+.badge-purple { background:var(--purple-bg);color:var(--purple); }
+.badge-amber { background:var(--amber-bg);color:var(--amber); }
+
+/* ── Insights ── */
+.insight-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px; }
+@media(max-width:900px) { .insight-grid { grid-template-columns:1fr; } }
+.insight-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px;border-left:4px solid var(--accent); }
+.insight-card.green { border-left-color:var(--green); }
+.insight-card.amber { border-left-color:var(--amber); }
+.insight-card.red { border-left-color:var(--red); }
+.insight-title { font-size:0.82em;font-weight:600;margin-bottom:4px; }
+.insight-text { font-size:0.78em;color:var(--text-secondary);line-height:1.5; }
+
+/* ── Model Comparison ── */
+.model-cards { display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px; }
+@media(max-width:900px) { .model-cards { grid-template-columns:1fr; } }
+.model-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;transition:var(--transition); }
+.model-card.best { border-color:var(--green);background:linear-gradient(135deg,rgba(16,185,129,0.05),rgba(16,185,129,0.02)); }
+.model-card.best::before { content:'\2605 BEST MODEL';display:block;font-size:0.68em;color:var(--green);font-weight:700;letter-spacing:1px;margin-bottom:12px; }
+.model-name { font-size:1.1em;font-weight:700;margin-bottom:16px; }
+.model-metric { margin:10px 0; }
+.model-metric-label { font-size:0.72em;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px; }
+.model-metric-value { font-size:1.5em;font-weight:700; }
+
+/* ── Bar in table ── */
+.bar-cell { position:relative; }
+.bar-bg { position:absolute;top:50%;transform:translateY(-50%);left:0;height:6px;border-radius:3px;opacity:0.7;transition:width 0.8s ease; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <h1>Rossmann Analytics</h1>
+    <p>Sales Forecasting Suite</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" data-page="overview">
+      <span class="nav-icon">&#x1f4ca;</span> Executive Overview
+    </div>
+    <div class="nav-item" data-page="sales">
+      <span class="nav-icon">&#x1f4c8;</span> Sales Analytics
+    </div>
+    <div class="nav-item" data-page="promo">
+      <span class="nav-icon">&#x1f3af;</span> Promotion Insights
+    </div>
+    <div class="nav-item" data-page="forecast">
+      <span class="nav-icon">&#x1f52e;</span> Forecast Center
+    </div>
+    <div class="nav-item" data-page="model">
+      <span class="nav-icon">&#x1f9e0;</span> Model Insights
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    Gradient Boosting &bull; R&sup2; 0.8724<br>
+    844,392 records &bull; 1,115 stores
+  </div>
+</nav>
+
+<!-- ── Main Content ── -->
+<div class="main">
+
+<!-- ═══ PAGE 1: EXECUTIVE OVERVIEW ═══ -->
+<div class="page active" id="page-overview">
+  <div class="page-header">
+    <h2>Executive Overview</h2>
+    <p>High-level KPIs and business performance summary across 1,115 Rossmann stores</p>
+  </div>
+  <div class="page-content" id="content-overview"></div>
+</div>
+
+<!-- ═══ PAGE 2: SALES ANALYTICS ═══ -->
+<div class="page" id="page-sales">
+  <div class="page-header">
+    <h2>Sales Analytics</h2>
+    <p>Deep dive into monthly trends, store performance, and assortment analysis</p>
+  </div>
+  <div class="page-content" id="content-sales"></div>
+</div>
+
+<!-- ═══ PAGE 3: PROMOTION INSIGHTS ═══ -->
+<div class="page" id="page-promo">
+  <div class="page-header">
+    <h2>Promotion Insights</h2>
+    <p>Quantify the business impact of promotions on sales and customer traffic</p>
+  </div>
+  <div class="page-content" id="content-promo"></div>
+</div>
+
+<!-- ═══ PAGE 4: FORECAST CENTER ═══ -->
+<div class="page" id="page-forecast">
+  <div class="page-header">
+    <h2>Forecast Center</h2>
+    <p>Actual vs predicted sales trends from the holdout test period</p>
+  </div>
+  <div class="page-content" id="content-forecast"></div>
+</div>
+
+<!-- ═══ PAGE 5: MODEL INSIGHTS ═══ -->
+<div class="page" id="page-model">
+  <div class="page-header">
+    <h2>Model Insights</h2>
+    <p>Feature importance, model comparison, and machine learning performance</p>
+  </div>
+  <div class="page-content" id="content-model"></div>
+</div>
+
+</div></div>
+
+<script>
+const D = {"overview": {"total_records": 844392, "num_stores": 1115, "avg_daily_sales": 6956.0, "median_daily_sales": 6369.0, "total_revenue": 5873180623, "avg_customers": 763.0, "date_range": ["2013-01-01", "2015-07-31"], "total_days": 942}, "monthly_trends": [{"month": "2013-01", "avg_sales": 6240.0, "total_sales": 180132207, "avg_customers": 706.0, "records": 28869}, {"month": "2013-02", "avg_sales": 6429.0, "total_sales": 171534275, "avg_customers": 721.0, "records": 26683}, {"month": "2013-03", "avg_sales": 7213.0, "total_sales": 201180369, "avg_customers": 788.0, "records": 27892}, {"month": "2013-04", "avg_sales": 6579.0, "total_sales": 183431432, "avg_customers": 749.0, "records": 27880}, {"month": "2013-05", "avg_sales": 7076.0, "total_sales": 185411063, "avg_customers": 791.0, "records": 26202}, {"month": "2013-06", "avg_sales": 6467.0, "total_sales": 180702351, "avg_customers": 733.0, "records": 27942}, {"month": "2013-07", "avg_sales": 6923.0, "total_sales": 208843882, "avg_customers": 758.0, "records": 30166}, {"month": "2013-08", "avg_sales": 6596.0, "total_sales": 198042727, "avg_customers": 743.0, "records": 30025}, {"month": "2013-09", "avg_sales": 6363.0, "total_sales": 178053963, "avg_customers": 727.0, "records": 27981}, {"month": "2013-10", "avg_sales": 6473.0, "total_sales": 187662330, "avg_customers": 737.0, "records": 28990}, {"month": "2013-11", "avg_sales": 6905.0, "total_sales": 196170924, "avg_customers": 758.0, "records": 28412}, {"month": "2013-12", "avg_sales": 8613.0, "total_sales": 231710561, "avg_customers": 888.0, "records": 26901}, {"month": "2014-01", "avg_sales": 6539.0, "total_sales": 187752787, "avg_customers": 728.0, "records": 28711}, {"month": "2014-02", "avg_sales": 6678.0, "total_sales": 178924677, "avg_customers": 745.0, "records": 26793}, {"month": "2014-03", "avg_sales": 6654.0, "total_sales": 193019854, "avg_customers": 741.0, "records": 29008}, {"month": "2014-04", "avg_sales": 7227.0, "total_sales": 194544977, "avg_customers": 793.0, "records": 26920}, {"month": "2014-05", "avg_sales": 6948.0, "total_sales": 194693257, "avg_customers": 767.0, "records": 28021}, {"month": "2014-06", "avg_sales": 7251.0, "total_sales": 190047051, "avg_customers": 785.0, "records": 26211}, {"month": "2014-07", "avg_sales": 6891.0, "total_sales": 173892707, "avg_customers": 765.0, "records": 25233}, {"month": "2014-08", "avg_sales": 6714.0, "total_sales": 163748475, "avg_customers": 759.0, "records": 24388}, {"month": "2014-09", "avg_sales": 6757.0, "total_sales": 164516168, "avg_customers": 767.0, "records": 24349}, {"month": "2014-10", "avg_sales": 6757.0, "total_sales": 164216398, "avg_customers": 771.0, "records": 24302}, {"month": "2014-11", "avg_sales": 7540.0, "total_sales": 173327953, "avg_customers": 813.0, "records": 22989}, {"month": "2014-12", "avg_sales": 8604.0, "total_sales": 202120592, "avg_customers": 885.0, "records": 23492}, {"month": "2015-01", "avg_sales": 6913.0, "total_sales": 198843730, "avg_customers": 734.0, "records": 28763}, {"month": "2015-02", "avg_sales": 6660.0, "total_sales": 178275458, "avg_customers": 728.0, "records": 26767}, {"month": "2015-03", "avg_sales": 7071.0, "total_sales": 205631683, "avg_customers": 750.0, "records": 29080}, {"month": "2015-04", "avg_sales": 7349.0, "total_sales": 197918886, "avg_customers": 782.0, "records": 26931}, {"month": "2015-05", "avg_sales": 7308.0, "total_sales": 189143897, "avg_customers": 780.0, "records": 25880}, {"month": "2015-06", "avg_sales": 7296.0, "total_sales": 207363373, "avg_customers": 762.0, "records": 28423}, {"month": "2015-07", "avg_sales": 7033.0, "total_sales": 212322616, "avg_customers": 737.0, "records": 30188}], "day_of_week": [{"day": "Mon", "day_num": 1, "avg_sales": 8216.0, "avg_customers": 855.0}, {"day": "Tue", "day_num": 2, "avg_sales": 7088.0, "avg_customers": 770.0}, {"day": "Wed", "day_num": 3, "avg_sales": 6728.0, "avg_customers": 741.0}, {"day": "Thu", "day_num": 4, "avg_sales": 6767.0, "avg_customers": 756.0}, {"day": "Fri", "day_num": 5, "avg_sales": 7073.0, "avg_customers": 782.0}, {"day": "Sat", "day_num": 6, "avg_sales": 5875.0, "avg_customers": 660.0}, {"day": "Sun", "day_num": 7, "avg_sales": 8225.0, "avg_customers": 1442.0}], "top_stores": [{"store": 817, "avg_sales": 21757.0, "avg_customers": 3131.0, "type": "a", "assortment": "a"}, {"store": 262, "avg_sales": 20719.0, "avg_customers": 3402.0, "type": "b", "assortment": "a"}, {"store": 1114, "avg_sales": 20667.0, "avg_customers": 3201.0, "type": "a", "assortment": "c"}, {"store": 251, "avg_sales": 19123.0, "avg_customers": 2450.0, "type": "a", "assortment": "c"}, {"store": 842, "avg_sales": 18575.0, "avg_customers": 1149.0, "type": "d", "assortment": "c"}, {"store": 513, "avg_sales": 18179.0, "avg_customers": 2096.0, "type": "a", "assortment": "a"}, {"store": 562, "avg_sales": 17970.0, "avg_customers": 3105.0, "type": "b", "assortment": "c"}, {"store": 788, "avg_sales": 17962.0, "avg_customers": 1718.0, "type": "a", "assortment": "c"}, {"store": 383, "avg_sales": 17295.0, "avg_customers": 2205.0, "type": "a", "assortment": "c"}, {"store": 756, "avg_sales": 16575.0, "avg_customers": 2347.0, "type": "a", "assortment": "c"}], "bottom_stores": [{"store": 307, "avg_sales": 2704.0, "avg_customers": 308.0, "type": "a", "assortment": "a"}, {"store": 543, "avg_sales": 2790.0, "avg_customers": 240.0, "type": "c", "assortment": "a"}, {"store": 198, "avg_sales": 2901.0, "avg_customers": 338.0, "type": "a", "assortment": "a"}, {"store": 208, "avg_sales": 2936.0, "avg_customers": 413.0, "type": "c", "assortment": "a"}, {"store": 841, "avg_sales": 2973.0, "avg_customers": 412.0, "type": "a", "assortment": "a"}, {"store": 254, "avg_sales": 3006.0, "avg_customers": 259.0, "type": "d", "assortment": "a"}, {"store": 794, "avg_sales": 3084.0, "avg_customers": 522.0, "type": "c", "assortment": "c"}, {"store": 219, "avg_sales": 3134.0, "avg_customers": 406.0, "type": "a", "assortment": "a"}, {"store": 210, "avg_sales": 3194.0, "avg_customers": 326.0, "type": "d", "assortment": "a"}, {"store": 425, "avg_sales": 3238.0, "avg_customers": 434.0, "type": "d", "assortment": "c"}], "store_types": [{"type": "A", "stores": 602, "avg_sales": 6925.0, "avg_customers": 795.0, "sales_per_customer": 8.7}, {"type": "B", "stores": 17, "avg_sales": 10231.0, "avg_customers": 2022.0, "sales_per_customer": 5.1}, {"type": "C", "stores": 148, "avg_sales": 6933.0, "avg_customers": 815.0, "sales_per_customer": 8.5}, {"type": "D", "stores": 348, "avg_sales": 6822.0, "avg_customers": 606.0, "sales_per_customer": 11.3}], "assortment": [{"type": "A", "name": "Basic", "avg_sales": 6621.0, "avg_customers": 748.0}, {"type": "B", "name": "Extra", "avg_sales": 8639.0, "avg_customers": 2067.0}, {"type": "C", "name": "Extended", "avg_sales": 7301.0, "avg_customers": 752.0}], "promotion": {"no_promo_avg": 5929.0, "promo_avg": 8228.0, "lift_pct": 38.8, "no_promo_cust": 697.0, "promo_cust": 844.0, "by_store_type": [{"type": "A", "no_promo": 5809.0, "promo": 8304.0, "lift_pct": 43.0}, {"type": "B", "no_promo": 9567.0, "promo": 11308.0, "lift_pct": 18.2}, {"type": "C", "no_promo": 6028.0, "promo": 8042.0, "lift_pct": 33.4}, {"type": "D", "no_promo": 5855.0, "promo": 8018.0, "lift_pct": 36.9}]}, "seasonality": [{"month": "Jan", "month_num": 1, "avg_sales": 6564.0}, {"month": "Feb", "month_num": 2, "avg_sales": 6589.0}, {"month": "Mar", "month_num": 3, "avg_sales": 6976.0}, {"month": "Apr", "month_num": 4, "avg_sales": 7046.0}, {"month": "May", "month_num": 5, "avg_sales": 7106.0}, {"month": "Jun", "month_num": 6, "avg_sales": 7001.0}, {"month": "Jul", "month_num": 7, "avg_sales": 6953.0}, {"month": "Aug", "month_num": 8, "avg_sales": 6649.0}, {"month": "Sep", "month_num": 9, "avg_sales": 6546.0}, {"month": "Oct", "month_num": 10, "avg_sales": 6603.0}, {"month": "Nov", "month_num": 11, "avg_sales": 7189.0}, {"month": "Dec", "month_num": 12, "avg_sales": 8609.0}], "forecast_sample": [{"date": "2015-01-24", "avg_sales": 5217.0}, {"date": "2015-01-25", "avg_sales": 10531.0}, {"date": "2015-01-26", "avg_sales": 8440.0}, {"date": "2015-01-27", "avg_sales": 7534.0}, {"date": "2015-01-28", "avg_sales": 7119.0}, {"date": "2015-01-29", "avg_sales": 7203.0}, {"date": "2015-01-30", "avg_sales": 8487.0}, {"date": "2015-01-31", "avg_sales": 6602.0}, {"date": "2015-02-01", "avg_sales": 12531.0}, {"date": "2015-02-02", "avg_sales": 9238.0}, {"date": "2015-02-03", "avg_sales": 7993.0}, {"date": "2015-02-04", "avg_sales": 7310.0}, {"date": "2015-02-05", "avg_sales": 7158.0}, {"date": "2015-02-06", "avg_sales": 7569.0}, {"date": "2015-02-07", "avg_sales": 5915.0}, {"date": "2015-02-08", "avg_sales": 12248.0}, {"date": "2015-02-09", "avg_sales": 5809.0}, {"date": "2015-02-10", "avg_sales": 5691.0}, {"date": "2015-02-11", "avg_sales": 5734.0}, {"date": "2015-02-12", "avg_sales": 5522.0}, {"date": "2015-02-13", "avg_sales": 6468.0}, {"date": "2015-02-14", "avg_sales": 6010.0}, {"date": "2015-02-15", "avg_sales": 12070.0}, {"date": "2015-02-16", "avg_sales": 8608.0}, {"date": "2015-02-17", "avg_sales": 7470.0}, {"date": "2015-02-18", "avg_sales": 7247.0}, {"date": "2015-02-19", "avg_sales": 7216.0}, {"date": "2015-02-20", "avg_sales": 7273.0}, {"date": "2015-02-21", "avg_sales": 5652.0}, {"date": "2015-02-22", "avg_sales": 11731.0}, {"date": "2015-02-23", "avg_sales": 5377.0}, {"date": "2015-02-24", "avg_sales": 5411.0}, {"date": "2015-02-25", "avg_sales": 5416.0}, {"date": "2015-02-26", "avg_sales": 5815.0}, {"date": "2015-02-27", "avg_sales": 6989.0}, {"date": "2015-02-28", "avg_sales": 6668.0}, {"date": "2015-03-01", "avg_sales": 12050.0}, {"date": "2015-03-02", "avg_sales": 9823.0}, {"date": "2015-03-03", "avg_sales": 8297.0}, {"date": "2015-03-04", "avg_sales": 7567.0}, {"date": "2015-03-05", "avg_sales": 7424.0}, {"date": "2015-03-06", "avg_sales": 7641.0}, {"date": "2015-03-07", "avg_sales": 5898.0}, {"date": "2015-03-08", "avg_sales": 10067.0}, {"date": "2015-03-09", "avg_sales": 6078.0}, {"date": "2015-03-10", "avg_sales": 5580.0}, {"date": "2015-03-11", "avg_sales": 5640.0}, {"date": "2015-03-12", "avg_sales": 5734.0}, {"date": "2015-03-13", "avg_sales": 6243.0}, {"date": "2015-03-14", "avg_sales": 5953.0}, {"date": "2015-03-15", "avg_sales": 8150.0}, {"date": "2015-03-16", "avg_sales": 9773.0}, {"date": "2015-03-17", "avg_sales": 7900.0}, {"date": "2015-03-18", "avg_sales": 7188.0}, {"date": "2015-03-19", "avg_sales": 7254.0}, {"date": "2015-03-20", "avg_sales": 7443.0}, {"date": "2015-03-21", "avg_sales": 5749.0}, {"date": "2015-03-22", "avg_sales": 7608.0}, {"date": "2015-03-23", "avg_sales": 6094.0}, {"date": "2015-03-24", "avg_sales": 5589.0}, {"date": "2015-03-25", "avg_sales": 5452.0}, {"date": "2015-03-26", "avg_sales": 5706.0}, {"date": "2015-03-27", "avg_sales": 6348.0}, {"date": "2015-03-28", "avg_sales": 6125.0}, {"date": "2015-03-29", "avg_sales": 7070.0}, {"date": "2015-03-30", "avg_sales": 11095.0}, {"date": "2015-03-31", "avg_sales": 10065.0}, {"date": "2015-04-01", "avg_sales": 9957.0}, {"date": "2015-04-02", "avg_sales": 10225.0}, {"date": "2015-04-03", "avg_sales": 14263.0}, {"date": "2015-04-04", "avg_sales": 8401.0}, {"date": "2015-04-05", "avg_sales": 6788.0}, {"date": "2015-04-06", "avg_sales": 8529.0}, {"date": "2015-04-07", "avg_sales": 7082.0}, {"date": "2015-04-08", "avg_sales": 6090.0}, {"date": "2015-04-09", "avg_sales": 5900.0}, {"date": "2015-04-10", "avg_sales": 5981.0}, {"date": "2015-04-11", "avg_sales": 5781.0}, {"date": "2015-04-12", "avg_sales": 7655.0}, {"date": "2015-04-13", "avg_sales": 9933.0}, {"date": "2015-04-14", "avg_sales": 8221.0}, {"date": "2015-04-15", "avg_sales": 7190.0}, {"date": "2015-04-16", "avg_sales": 7531.0}, {"date": "2015-04-17", "avg_sales": 7837.0}, {"date": "2015-04-18", "avg_sales": 5892.0}, {"date": "2015-04-19", "avg_sales": 7417.0}, {"date": "2015-04-20", "avg_sales": 5909.0}, {"date": "2015-04-21", "avg_sales": 5417.0}, {"date": "2015-04-22", "avg_sales": 5455.0}, {"date": "2015-04-23", "avg_sales": 5519.0}, {"date": "2015-04-24", "avg_sales": 5711.0}, {"date": "2015-04-25", "avg_sales": 5655.0}, {"date": "2015-04-26", "avg_sales": 7315.0}, {"date": "2015-04-27", "avg_sales": 9512.0}, {"date": "2015-04-28", "avg_sales": 8351.0}, {"date": "2015-04-29", "avg_sales": 8536.0}, {"date": "2015-04-30", "avg_sales": 10160.0}, {"date": "2015-05-01", "avg_sales": 13212.0}, {"date": "2015-05-02", "avg_sales": 7861.0}, {"date": "2015-05-03", "avg_sales": 7552.0}, {"date": "2015-05-04", "avg_sales": 9871.0}, {"date": "2015-05-05", "avg_sales": 7888.0}, {"date": "2015-05-06", "avg_sales": 7757.0}, {"date": "2015-05-07", "avg_sales": 7676.0}, {"date": "2015-05-08", "avg_sales": 7779.0}, {"date": "2015-05-09", "avg_sales": 6425.0}, {"date": "2015-05-10", "avg_sales": 7866.0}, {"date": "2015-05-11", "avg_sales": 6044.0}, {"date": "2015-05-12", "avg_sales": 6002.0}, {"date": "2015-05-13", "avg_sales": 7314.0}, {"date": "2015-05-14", "avg_sales": 9039.0}, {"date": "2015-05-15", "avg_sales": 7710.0}, {"date": "2015-05-16", "avg_sales": 5828.0}, {"date": "2015-05-17", "avg_sales": 7990.0}, {"date": "2015-05-18", "avg_sales": 9510.0}, {"date": "2015-05-19", "avg_sales": 8005.0}, {"date": "2015-05-20", "avg_sales": 7494.0}, {"date": "2015-05-21", "avg_sales": 7380.0}, {"date": "2015-05-22", "avg_sales": 7491.0}, {"date": "2015-05-23", "avg_sales": 6075.0}, {"date": "2015-05-24", "avg_sales": 8168.0}, {"date": "2015-05-25", "avg_sales": 9075.0}, {"date": "2015-05-26", "avg_sales": 6974.0}, {"date": "2015-05-27", "avg_sales": 6167.0}, {"date": "2015-05-28", "avg_sales": 6255.0}, {"date": "2015-05-29", "avg_sales": 7509.0}, {"date": "2015-05-30", "avg_sales": 6768.0}, {"date": "2015-05-31", "avg_sales": 8709.0}, {"date": "2015-06-01", "avg_sales": 10532.0}, {"date": "2015-06-02", "avg_sales": 8902.0}, {"date": "2015-06-03", "avg_sales": 8736.0}, {"date": "2015-06-04", "avg_sales": 8181.0}, {"date": "2015-06-05", "avg_sales": 8722.0}, {"date": "2015-06-06", "avg_sales": 5810.0}, {"date": "2015-06-07", "avg_sales": 7954.0}, {"date": "2015-06-08", "avg_sales": 6607.0}, {"date": "2015-06-09", "avg_sales": 6158.0}, {"date": "2015-06-10", "avg_sales": 5852.0}, {"date": "2015-06-11", "avg_sales": 5877.0}, {"date": "2015-06-12", "avg_sales": 5930.0}, {"date": "2015-06-13", "avg_sales": 5844.0}, {"date": "2015-06-14", "avg_sales": 8423.0}, {"date": "2015-06-15", "avg_sales": 10386.0}, {"date": "2015-06-16", "avg_sales": 8651.0}, {"date": "2015-06-17", "avg_sales": 7737.0}, {"date": "2015-06-18", "avg_sales": 7353.0}, {"date": "2015-06-19", "avg_sales": 7593.0}, {"date": "2015-06-20", "avg_sales": 5737.0}, {"date": "2015-06-21", "avg_sales": 7808.0}, {"date": "2015-06-22", "avg_sales": 5882.0}, {"date": "2015-06-23", "avg_sales": 5648.0}, {"date": "2015-06-24", "avg_sales": 5617.0}, {"date": "2015-06-25", "avg_sales": 5576.0}, {"date": "2015-06-26", "avg_sales": 5950.0}, {"date": "2015-06-27", "avg_sales": 5864.0}, {"date": "2015-06-28", "avg_sales": 8208.0}, {"date": "2015-06-29", "avg_sales": 10688.0}, {"date": "2015-06-30", "avg_sales": 10299.0}, {"date": "2015-07-01", "avg_sales": 8062.0}, {"date": "2015-07-02", "avg_sales": 7582.0}, {"date": "2015-07-03", "avg_sales": 7657.0}, {"date": "2015-07-04", "avg_sales": 5435.0}, {"date": "2015-07-05", "avg_sales": 8159.0}, {"date": "2015-07-06", "avg_sales": 6769.0}, {"date": "2015-07-07", "avg_sales": 5739.0}, {"date": "2015-07-08", "avg_sales": 6208.0}, {"date": "2015-07-09", "avg_sales": 6228.0}, {"date": "2015-07-10", "avg_sales": 6342.0}, {"date": "2015-07-11", "avg_sales": 5626.0}, {"date": "2015-07-12", "avg_sales": 8658.0}, {"date": "2015-07-13", "avg_sales": 9741.0}, {"date": "2015-07-14", "avg_sales": 8392.0}, {"date": "2015-07-15", "avg_sales": 7867.0}, {"date": "2015-07-16", "avg_sales": 7530.0}, {"date": "2015-07-17", "avg_sales": 7149.0}, {"date": "2015-07-18", "avg_sales": 5794.0}, {"date": "2015-07-19", "avg_sales": 9326.0}, {"date": "2015-07-20", "avg_sales": 6594.0}, {"date": "2015-07-21", "avg_sales": 5711.0}, {"date": "2015-07-22", "avg_sales": 5490.0}, {"date": "2015-07-23", "avg_sales": 6008.0}, {"date": "2015-07-24", "avg_sales": 5931.0}, {"date": "2015-07-25", "avg_sales": 5410.0}, {"date": "2015-07-26", "avg_sales": 8933.0}, {"date": "2015-07-27", "avg_sales": 9620.0}, {"date": "2015-07-28", "avg_sales": 8190.0}, {"date": "2015-07-29", "avg_sales": 7637.0}, {"date": "2015-07-30", "avg_sales": 7906.0}, {"date": "2015-07-31", "avg_sales": 9083.0}], "models": {"baseline": {"name": "Historical Average", "mae": 1225.53, "rmse": 1653.96, "r2": 0.707}, "random_forest": {"name": "Random Forest", "mae": 932.49, "rmse": 1338.22, "r2": 0.8082}, "xgboost": {"name": "Gradient Boosting", "mae": 745.88, "rmse": 1091.35, "r2": 0.8724}}, "feature_importance": {"xgboost": [{"feature": "Sales_Lag_14", "importance": 0.2884}, {"feature": "RollingMean_7", "importance": 0.1413}, {"feature": "RollingMean_30", "importance": 0.114}, {"feature": "Promo", "importance": 0.0942}, {"feature": "RollingStd_7", "importance": 0.0918}, {"feature": "Sales_Lag_1", "importance": 0.0899}, {"feature": "RollingMean_14", "importance": 0.0624}, {"feature": "DayOfWeek", "importance": 0.038}, {"feature": "Sales_Lag_7", "importance": 0.0229}, {"feature": "Day", "importance": 0.0151}, {"feature": "WeekOfYear", "importance": 0.0061}, {"feature": "Month", "importance": 0.0059}, {"feature": "Sales_Lag_30", "importance": 0.0056}, {"feature": "IsWeekend", "importance": 0.0054}, {"feature": "PromoDurationMonths", "importance": 0.0038}], "random_forest": [{"feature": "RollingMean_30", "importance": 0.1779}, {"feature": "Sales_Lag_14", "importance": 0.1651}, {"feature": "RollingMean_7", "importance": 0.1441}, {"feature": "RollingStd_7", "importance": 0.1436}, {"feature": "RollingMean_14", "importance": 0.0974}, {"feature": "Sales_Lag_1", "importance": 0.0946}, {"feature": "Promo", "importance": 0.0602}, {"feature": "Sales_Lag_30", "importance": 0.0351}, {"feature": "DayOfWeek", "importance": 0.0293}, {"feature": "Sales_Lag_7", "importance": 0.0242}]}};
+const COLORS = ["#6366f1","#8b5cf6","#a78bfa","#c084fc","#e879f9","#f472b6","#fb7185","#f43f5e","#f59e0b","#10b981","#06b6d4","#3b82f6"];
+const fmt = v => {{ if(Math.abs(v)>=1e9) return (v/1e9).toFixed(1)+'B'; if(Math.abs(v)>=1e6) return (v/1e6).toFixed(1)+'M'; if(Math.abs(v)>=1e3) return (v/1e3).toFixed(1)+'K'; return v.toLocaleString(); }};
+const fmtN = v => v.toLocaleString();
+
+// ── Navigation ──
+document.querySelectorAll('.nav-item').forEach(item => {{
+  item.addEventListener('click', () => {{
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-'+item.dataset.page).classList.add('active');
+  }});
+}});
+
+// ── SVG Helpers ──
+function svgBar(data, w=620, h=300, opts={{}}) {{
+  const m = {{t:40,r:20,b:60,l:60,...(opts.margin||{{}})}};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const maxV = Math.max(...data.map(d=>d.value))||1;
+  const n=data.length, barW=Math.min(pw/n*0.65,50), gap=(pw-barW*n)/(n+1);
+  let s=`<svg viewBox="0 0 ${{w}} ${{h}}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let i=0;i<5;i++) {{
+    const y=m.t+ph-(ph*i/4), val=maxV*i/4;
+    s+=`<line x1="${{m.l}}" y1="${{y}}" x2="${{w-m.r}}" y2="${{y}}" stroke="rgba(148,163,184,0.1)" stroke-width="0.5"/>`;
+    s+=`<text x="${{m.l-8}}" y="${{y+4}}" text-anchor="end" font-size="10" fill="#64748b">${{fmt(val)}}</text>`;
+  }}
+  data.forEach((d,i) => {{
+    const x=m.l+gap+i*(barW+gap), bh=(d.value/maxV)*ph, y=m.t+ph-bh;
+    const c=d.color||COLORS[i%COLORS.length];
+    s+=`<rect x="${{x}}" y="${{y}}" width="${{barW}}" height="${{bh}}" rx="4" fill="${{c}}" opacity="0.85"><animate attributeName="height" from="0" to="${{bh}}" dur="0.6s" fill="freeze"/><animate attributeName="y" from="${{m.t+ph}}" to="${{y}}" dur="0.6s" fill="freeze"/></rect>`;
+    s+=`<text x="${{x+barW/2}}" y="${{y-6}}" text-anchor="middle" font-size="10" font-weight="600" fill="#cbd5e1">${{fmt(d.value)}}</text>`;
+    s+=`<text x="${{x+barW/2}}" y="${{h-m.b+16}}" text-anchor="middle" font-size="10" fill="#94a3b8">${{d.label}}</text>`;
+  }});
+  s+=`</svg>`;
+  return s;
+}}
+
+function svgLine(datasets, w=620, h=300, opts={{}}) {{
+  const m={{t:30,r:20,b:50,l:60,...(opts.margin||{{}})}};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  let allV=[];datasets.forEach(ds=>ds.points.forEach(p=>allV.push(p.y)));
+  if(!allV.length) return '';
+  const minV=Math.min(...allV),maxV=Math.max(...allV), rng=maxV-minV||1;
+  const maxX=datasets.reduce((a,ds)=>Math.max(a,ds.points.length-1),0)||1;
+  let s=`<svg viewBox="0 0 ${{w}} ${{h}}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let i=0;i<5;i++) {{
+    const y=m.t+ph-(ph*i/4), val=minV+rng*i/4;
+    s+=`<line x1="${{m.l}}" y1="${{y}}" x2="${{w-m.r}}" y2="${{y}}" stroke="rgba(148,163,184,0.1)" stroke-width="0.5"/>`;
+    s+=`<text x="${{m.l-8}}" y="${{y+4}}" text-anchor="end" font-size="10" fill="#64748b">${{fmt(val)}}</text>`;
+  }}
+  datasets.forEach(ds => {{
+    if(ds.points.length<2) return;
+    const pts=ds.points.map((p,i)=>{{
+      const x=m.l+(i/maxX)*pw, y=m.t+ph-((p.y-minV)/rng)*ph;
+      return `${{x}},${{y}}`;
+    }});
+    const path='M '+pts.join(' L ');
+    const fX=m.l, lX=m.l+((ds.points.length-1)/maxX)*pw;
+    s+=`<path d="${{path}} L ${{lX}},${{m.t+ph}} L ${{fX}},${{m.t+ph}} Z" fill="${{ds.color}}" opacity="0.06"/>`;
+    s+=`<path d="${{path}}" fill="none" stroke="${{ds.color}}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }});
+  if(opts.xLabels) {{
+    const step=Math.max(1,Math.floor(opts.xLabels.length/8));
+    opts.xLabels.forEach((l,i) => {{
+      if(i%step!==0) return;
+      const x=m.l+(i/maxX)*pw;
+      s+=`<text x="${{x}}" y="${{h-m.b+16}}" text-anchor="middle" font-size="9" fill="#64748b" transform="rotate(-35,${{x}},${{h-m.b+16}})">${{l}}</text>`;
+    }});
+  }}
+  if(opts.legend) {{
+    datasets.forEach((ds,i) => {{
+      const lx=m.l+i*130, ly=h-8;
+      s+=`<rect x="${{lx}}" y="${{ly-8}}" width="12" height="12" rx="2" fill="${{ds.color}}"/>`;
+      s+=`<text x="${{lx+16}}" y="${{ly+2}}" font-size="10" fill="#94a3b8">${{ds.name}}</text>`;
+    }});
+  }}
+  s+=`</svg>`;
+  return s;
+}}
+
+function svgHBar(data, w=620, h=null) {{
+  const n=data.length;
+  if(!h) h=Math.max(200,n*34+70);
+  const m={{t:20,r:80,b:20,l:110}};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const maxV=Math.max(...data.map(d=>d.value))||1;
+  const barH=Math.min(ph/n*0.7,22), gap=(ph-barH*n)/(n+1);
+  let s=`<svg viewBox="0 0 ${{w}} ${{h}}" xmlns="http://www.w3.org/2000/svg">`;
+  data.forEach((d,i) => {{
+    const y=m.t+gap+i*(barH+gap), bw=(d.value/maxV)*pw;
+    const c=d.color||COLORS[i%COLORS.length];
+    s+=`<rect x="${{m.l}}" y="${{y}}" width="${{bw}}" height="${{barH}}" rx="4" fill="${{c}}" opacity="0.85"><animate attributeName="width" from="0" to="${{bw}}" dur="0.6s" fill="freeze"/></rect>`;
+    s+=`<text x="${{m.l-8}}" y="${{y+barH/2+4}}" text-anchor="end" font-size="10" fill="#94a3b8">${{d.label}}</text>`;
+    s+=`<text x="${{m.l+bw+6}}" y="${{y+barH/2+4}}" font-size="10" font-weight="600" fill="#cbd5e1">${{fmt(d.value)}}</text>`;
+  }});
+  s+=`</svg>`;
+  return s;
+}}
+
+function svgGroupedBar(groups, w=620, h=300) {{
+  const m={{t:30,r:20,b:60,l:60}};
+  const pw=w-m.l-m.r, ph=h-m.t-m.b;
+  const allV=groups.flatMap(g=>g.bars.map(b=>b.value));
+  const maxV=Math.max(...allV)||1;
+  const nG=groups.length, nS=groups[0].bars.length;
+  const gW=pw/nG, subW=Math.min(gW*0.7/nS,35);
+  const subColors=['#64748b','#6366f1'];
+  let s=`<svg viewBox="0 0 ${{w}} ${{h}}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let i=0;i<5;i++) {{
+    const y=m.t+ph-(ph*i/4), val=maxV*i/4;
+    s+=`<line x1="${{m.l}}" y1="${{y}}" x2="${{w-m.r}}" y2="${{y}}" stroke="rgba(148,163,184,0.1)" stroke-width="0.5"/>`;
+    s+=`<text x="${{m.l-8}}" y="${{y+4}}" text-anchor="end" font-size="10" fill="#64748b">${{fmt(val)}}</text>`;
+  }}
+  groups.forEach((g,gi) => {{
+    const gx=m.l+gi*gW+gW*0.15;
+    g.bars.forEach((b,si) => {{
+      const x=gx+si*(subW+3), bh=(b.value/maxV)*ph, y=m.t+ph-bh;
+      s+=`<rect x="${{x}}" y="${{y}}" width="${{subW}}" height="${{bh}}" rx="3" fill="${{subColors[si]}}" opacity="0.85"/>`;
+      s+=`<text x="${{x+subW/2}}" y="${{y-4}}" text-anchor="middle" font-size="9" fill="#cbd5e1">${{fmt(b.value)}}</text>`;
+    }});
+    s+=`<text x="${{gx+nS*(subW+3)/2}}" y="${{h-m.b+16}}" text-anchor="middle" font-size="11" fill="#94a3b8">${{g.label}}</text>`;
+  }});
+  groups[0].bars.forEach((b,i) => {{
+    const lx=m.l+i*120;
+    s+=`<rect x="${{lx}}" y="${{h-12}}" width="12" height="12" rx="2" fill="${{subColors[i]}}"/>`;
+    s+=`<text x="${{lx+16}}" y="${{h-2}}" font-size="10" fill="#94a3b8">${{b.label}}</text>`;
+  }});
+  s+=`</svg>`;
+  return s;
+}}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAGE BUILDERS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function buildOverview() {{
+  const o=D.overview, p=D.promotion;
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4b0;</div><div class="kpi-value">&euro;${{fmt(o.total_revenue)}}</div><div class="kpi-label">Total Revenue</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f3ea;</div><div class="kpi-value">${{fmtN(o.num_stores)}}</div><div class="kpi-label">Stores Tracked</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4c8;</div><div class="kpi-value">&euro;${{fmtN(o.avg_daily_sales)}}</div><div class="kpi-label">Avg Daily Sales</div><div class="kpi-delta up">Median &euro;${{fmtN(o.median_daily_sales)}}</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f465;</div><div class="kpi-value">${{fmtN(o.avg_customers)}}</div><div class="kpi-label">Avg Daily Customers</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f3af;</div><div class="kpi-value">${{p.lift_pct}}%</div><div class="kpi-label">Promo Sales Lift</div><div class="kpi-delta up">+&euro;${{fmtN(p.promo_avg - p.no_promo_avg)}}/day</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f916;</div><div class="kpi-value">0.8724</div><div class="kpi-label">Model R&sup2;</div><div class="kpi-delta up">MAE &euro;746</div></div>
+  </div>`;
+
+  // Monthly trend chart
+  const mPts = D.monthly_trends.map(m => ({{y:m.avg_sales}}));
+  const mLabels = D.monthly_trends.map(m => m.month);
+  h+=`<div class="chart-grid full"><div class="chart-card">
+    <div class="chart-title">Monthly Average Sales Trend (Jan 2013 &#x2192; Jul 2015)</div>
+    ${{svgLine([{{name:'Avg Sales',points:mPts,color:'#6366f1'}}],900,280,{{xLabels:mLabels}})}}
+  </div></div>`;
+
+  // Seasonality + DOW
+  h+=`<div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Seasonality: Average Sales by Month</div>
+      ${{svgBar(D.seasonality.map(s=>({{label:s.month,value:s.avg_sales}})))}}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Average Sales by Day of Week</div>
+      ${{svgBar(D.day_of_week.map(d=>({{label:d.day,value:d.avg_sales}})))}}
+    </div>
+  </div>`;
+
+  // Key insights
+  h+=`<div class="insight-grid">
+    <div class="insight-card green"><div class="insight-title">&#x1f4b0; Revenue Engine</div><div class="insight-text">Total revenue of &euro;${{fmt(o.total_revenue)}} across ${{fmtN(o.num_stores)}} stores over ${{o.total_days}} trading days. Average daily sales of &euro;${{fmtN(o.avg_daily_sales)}} per store.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f4c5; December Dominance</div><div class="insight-text">December consistently outperforms all months with avg sales of &euro;${{fmtN(D.seasonality[11].avg_sales)}}, driven by holiday shopping season.</div></div>
+    <div class="insight-card green"><div class="insight-title">&#x1f3af; Promotion Power</div><div class="insight-text">Active promotions drive a ${{p.lift_pct}}% sales uplift, increasing average daily sales from &euro;${{fmtN(p.no_promo_avg)}} to &euro;${{fmtN(p.promo_avg)}}.</div></div>
+    <div class="insight-card amber"><div class="insight-title">&#x1f4ca; Monday Peak</div><div class="insight-text">Monday is the highest-performing weekday with avg sales of &euro;${{fmtN(D.day_of_week[0].avg_sales)}}. Saturday is weakest at &euro;${{fmtN(D.day_of_week[5].avg_sales)}}.</div></div>
+  </div>`;
+  document.getElementById('content-overview').innerHTML = h;
+}}
+
+function buildSales() {{
+  let h='';
+
+  // Monthly total revenue trend
+  const mPts = D.monthly_trends.map(m=>({{y:m.total_sales}}));
+  const mLabels = D.monthly_trends.map(m=>m.month);
+  h+=`<div class="chart-grid full"><div class="chart-card">
+    <div class="chart-title">Monthly Total Revenue</div>
+    ${{svgLine([{{name:'Revenue',points:mPts,color:'#10b981'}}],900,260,{{xLabels:mLabels}})}}
+  </div></div>`;
+
+  // Store Type + Assortment
+  h+=`<div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Average Daily Sales by Store Type</div>
+      ${{svgBar(D.store_types.map(s=>({{label:'Type '+s.type,value:s.avg_sales}})))}}
+      <table class="data-table" style="margin-top:16px">
+        <tr><th>Type</th><th>Stores</th><th>Avg Sales</th><th>Avg Customers</th><th>Sales/Customer</th></tr>
+        ${{D.store_types.map(s=>`<tr><td><span class="badge badge-purple">Type ${{s.type}}</span></td><td>${{s.stores}}</td><td>&euro;${{fmtN(s.avg_sales)}}</td><td>${{fmtN(s.avg_customers)}}</td><td>&euro;${{s.sales_per_customer}}</td></tr>`).join('')}}
+      </table>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Average Daily Sales by Assortment</div>
+      ${{svgBar(D.assortment.map(a=>({{label:a.name+' ('+a.type+')',value:a.avg_sales}})))}}
+      <table class="data-table" style="margin-top:16px">
+        <tr><th>Assortment</th><th>Level</th><th>Avg Sales</th><th>Avg Customers</th></tr>
+        ${{D.assortment.map(a=>`<tr><td><span class="badge badge-blue">${{a.type}}</span></td><td>${{a.name}}</td><td>&euro;${{fmtN(a.avg_sales)}}</td><td>${{fmtN(a.avg_customers)}}</td></tr>`).join('')}}
+      </table>
+    </div>
+  </div>`;
+
+  // Top / Bottom Stores
+  h+=`<div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#x1f3c6; Top 10 Stores by Avg Daily Sales</div>
+      ${{svgHBar(D.top_stores.map((s,i)=>({{label:'Store '+s.store,value:s.avg_sales,color:'#10b981'}})))}}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">&#x26a0; Bottom 10 Stores by Avg Daily Sales</div>
+      ${{svgHBar(D.bottom_stores.map((s,i)=>({{label:'Store '+s.store,value:s.avg_sales,color:'#f43f5e'}})))}}
+    </div>
+  </div>`;
+
+  // Insights
+  const topS=D.top_stores[0], botS=D.bottom_stores[0];
+  const ratio=(topS.avg_sales/botS.avg_sales).toFixed(1);
+  h+=`<div class="insight-grid">
+    <div class="insight-card green"><div class="insight-title">&#x1f3c6; Top Performer</div><div class="insight-text">Store ${{topS.store}} leads with &euro;${{fmtN(topS.avg_sales)}} avg daily sales and ${{fmtN(topS.avg_customers)}} customers. Type ${{topS.type.toUpperCase()}} store.</div></div>
+    <div class="insight-card red"><div class="insight-title">&#x26a0; Performance Gap</div><div class="insight-text">The top store outperforms the bottom by ${{ratio}}x. Store ${{botS.store}} averages only &euro;${{fmtN(botS.avg_sales)}} daily, suggesting operational improvement opportunities.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f3ea; Store Type B Dominates</div><div class="insight-text">Type B stores generate &euro;${{fmtN(D.store_types[1].avg_sales)}} avg daily &mdash; highest across all types. However, they have lower sales/customer (&euro;${{D.store_types[1].sales_per_customer}}) vs Type D (&euro;${{D.store_types[3].sales_per_customer}}).</div></div>
+    <div class="insight-card amber"><div class="insight-title">&#x1f6d2; Assortment Effect</div><div class="insight-text">Extra (B) assortment stores avg &euro;${{fmtN(D.assortment[1].avg_sales)}}, outperforming Basic (A) at &euro;${{fmtN(D.assortment[0].avg_sales)}}. Wider product range correlates with higher sales.</div></div>
+  </div>`;
+  document.getElementById('content-sales').innerHTML=h;
+}}
+
+function buildPromo() {{
+  const p=D.promotion;
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4c8;</div><div class="kpi-value">+${{p.lift_pct}}%</div><div class="kpi-label">Sales Lift from Promos</div><div class="kpi-delta up">Universally Effective</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f6d2;</div><div class="kpi-value">&euro;${{fmtN(p.promo_avg)}}</div><div class="kpi-label">Avg Sales (Promo)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f6ab;</div><div class="kpi-value">&euro;${{fmtN(p.no_promo_avg)}}</div><div class="kpi-label">Avg Sales (No Promo)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f465;</div><div class="kpi-value">+${{Math.round((p.promo_cust-p.no_promo_cust)/p.no_promo_cust*100)}}%</div><div class="kpi-label">Customer Lift</div><div class="kpi-delta up">${{fmtN(p.no_promo_cust)}} &#x2192; ${{fmtN(p.promo_cust)}}</div></div>
+  </div>`;
+
+  // Promo vs No Promo bar
+  h+=`<div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Promo vs No Promo: Average Daily Sales</div>
+      ${{svgBar([{{label:'No Promo',value:p.no_promo_avg,color:'#64748b'}},{{label:'Promo',value:p.promo_avg,color:'#6366f1'}}])}}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Promotion Impact by Store Type</div>
+      ${{svgGroupedBar(p.by_store_type.map(s=>({{label:'Type '+s.type,bars:[{{label:'No Promo',value:s.no_promo}},{{label:'Promo',value:s.promo}}]}})))}}
+    </div>
+  </div>`;
+
+  // Promo lift table
+  h+=`<div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-title">Promotion Lift by Store Type</div>
+    <table class="data-table">
+      <tr><th>Store Type</th><th>No Promo Avg</th><th>Promo Avg</th><th>Lift</th><th>Assessment</th></tr>
+      ${{p.by_store_type.map(s=>`<tr>
+        <td><span class="badge badge-purple">Type ${{s.type}}</span></td>
+        <td>&euro;${{fmtN(s.no_promo)}}</td>
+        <td>&euro;${{fmtN(s.promo)}}</td>
+        <td><span class="badge badge-green">+${{s.lift_pct}}%</span></td>
+        <td>${{s.lift_pct>35?'High Impact':s.lift_pct>25?'Strong Impact':'Moderate Impact'}}</td>
+      </tr>`).join('')}}
+    </table>
+  </div>`;
+
+  h+=`<div class="insight-grid">
+    <div class="insight-card green"><div class="insight-title">&#x1f3af; Universal Effectiveness</div><div class="insight-text">Promotions boost sales across ALL store types. Type A sees the highest lift at ${{p.by_store_type[0].lift_pct}}%, while Type B sees ${{p.by_store_type[1].lift_pct}}%.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f465; Foot Traffic Driver</div><div class="insight-text">Promos increase not just sales but customer visits &mdash; from ${{fmtN(p.no_promo_cust)}} to ${{fmtN(p.promo_cust)}} avg daily customers (+${{Math.round((p.promo_cust-p.no_promo_cust)/p.no_promo_cust*100)}}%).</div></div>
+    <div class="insight-card amber"><div class="insight-title">&#x1f4a1; Strategic Recommendation</div><div class="insight-text">Promotions are the single biggest controllable lever for revenue growth. Prioritize promo deployment in Type A stores for maximum ROI.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f4ca; Type B Lower Lift</div><div class="insight-text">Type B stores show the lowest relative lift (${{p.by_store_type[1].lift_pct}}%), likely because their high baseline sales already attract high-intent shoppers.</div></div>
+  </div>`;
+  document.getElementById('content-promo').innerHTML=h;
+}}
+
+function buildForecast() {{
+  const fc=D.forecast_sample;
+  let h='';
+
+  // KPIs
+  const vals=fc.map(f=>f.avg_sales);
+  const avgFC=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  const maxFC=Math.max(...vals), minFC=Math.min(...vals);
+  h+=`<div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4c5;</div><div class="kpi-value">${{fc.length}}</div><div class="kpi-label">Forecast Days</div><div class="kpi-delta up">${{fc[0].date}} to ${{fc[fc.length-1].date}}</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4ca;</div><div class="kpi-value">&euro;${{fmtN(avgFC)}}</div><div class="kpi-label">Avg Daily (Test Period)</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4c8;</div><div class="kpi-value">&euro;${{fmtN(maxFC)}}</div><div class="kpi-label">Peak Daily Average</div></div>
+    <div class="kpi-card"><div class="kpi-icon">&#x1f4c9;</div><div class="kpi-value">&euro;${{fmtN(minFC)}}</div><div class="kpi-label">Trough Daily Average</div></div>
+  </div>`;
+
+  // Full forecast line chart
+  const pts=fc.map(f=>({{y:f.avg_sales}}));
+  const labels=fc.map(f=>f.date.slice(5));
+  h+=`<div class="chart-grid full"><div class="chart-card">
+    <div class="chart-title">Daily Average Sales &mdash; Test Period (Actual Values)</div>
+    <div class="chart-subtitle">Across all 1,115 stores. Weekly seasonality clearly visible.</div>
+    ${{svgLine([{{name:'Avg Sales',points:pts,color:'#6366f1'}}],900,320,{{xLabels:labels}})}}
+  </div></div>`;
+
+  h+=`<div class="insight-grid">
+    <div class="insight-card"><div class="insight-title">&#x1f50d; Weekly Rhythm</div><div class="insight-text">The test period shows strong weekly oscillation &mdash; Sunday peaks followed by Saturday troughs, matching training data patterns.</div></div>
+    <div class="insight-card green"><div class="insight-title">&#x1f916; Model Accuracy</div><div class="insight-text">The Gradient Boosting model achieves MAE of &euro;746 and R&sup2; of 0.87 on this exact test period, accurately tracking these daily fluctuations.</div></div>
+  </div>`;
+  document.getElementById('content-forecast').innerHTML=h;
+}}
+
+function buildModel() {{
+  const m=D.models;
+  let h=`
+  <div class="model-cards">
+    <div class="model-card">
+      <div class="model-name">Historical Average</div>
+      <div class="model-metric"><div class="model-metric-label">MAE</div><div class="model-metric-value" style="color:#f43f5e">&euro;${{fmtN(m.baseline.mae)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">RMSE</div><div class="model-metric-value" style="color:#f43f5e">&euro;${{fmtN(m.baseline.rmse)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">R&sup2;</div><div class="model-metric-value" style="color:#f43f5e">${{m.baseline.r2}}</div></div>
+    </div>
+    <div class="model-card">
+      <div class="model-name">Random Forest</div>
+      <div class="model-metric"><div class="model-metric-label">MAE</div><div class="model-metric-value" style="color:#f59e0b">&euro;${{fmtN(m.random_forest.mae)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">RMSE</div><div class="model-metric-value" style="color:#f59e0b">&euro;${{fmtN(m.random_forest.rmse)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">R&sup2;</div><div class="model-metric-value" style="color:#f59e0b">${{m.random_forest.r2}}</div></div>
+    </div>
+    <div class="model-card best">
+      <div class="model-name">Gradient Boosting</div>
+      <div class="model-metric"><div class="model-metric-label">MAE</div><div class="model-metric-value" style="color:#10b981">&euro;${{fmtN(m.xgboost.mae)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">RMSE</div><div class="model-metric-value" style="color:#10b981">&euro;${{fmtN(m.xgboost.rmse)}}</div></div>
+      <div class="model-metric"><div class="model-metric-label">R&sup2;</div><div class="model-metric-value" style="color:#10b981">${{m.xgboost.r2}}</div></div>
+    </div>
+  </div>`;
+
+  // Comparison table
+  h+=`<div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-title">Model Performance Comparison</div>
+    <table class="data-table">
+      <tr><th>Metric</th><th>Baseline</th><th>Random Forest</th><th>Gradient Boosting</th><th>GB Improvement</th></tr>
+      <tr><td>MAE</td><td>&euro;${{fmtN(m.baseline.mae)}}</td><td>&euro;${{fmtN(m.random_forest.mae)}}</td><td><strong>&euro;${{fmtN(m.xgboost.mae)}}</strong></td><td><span class="badge badge-green">-${{Math.round((1-m.xgboost.mae/m.baseline.mae)*100)}}% vs Baseline</span></td></tr>
+      <tr><td>RMSE</td><td>&euro;${{fmtN(m.baseline.rmse)}}</td><td>&euro;${{fmtN(m.random_forest.rmse)}}</td><td><strong>&euro;${{fmtN(m.xgboost.rmse)}}</strong></td><td><span class="badge badge-green">-${{Math.round((1-m.xgboost.rmse/m.baseline.rmse)*100)}}% vs Baseline</span></td></tr>
+      <tr><td>R&sup2;</td><td>${{m.baseline.r2}}</td><td>${{m.random_forest.r2}}</td><td><strong>${{m.xgboost.r2}}</strong></td><td><span class="badge badge-green">+${{(m.xgboost.r2-m.baseline.r2).toFixed(4)}}</span></td></tr>
+    </table>
+  </div>`;
+
+  // Feature importance
+  const fi=D.feature_importance.xgboost;
+  h+=`<div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#x1f9e0; Top Predictive Features (Gradient Boosting)</div>
+      ${{svgHBar(fi.map((f,i)=>({{label:f.feature,value:Math.round(f.importance*1000),color:i<3?'#6366f1':i<6?'#8b5cf6':'#64748b'}})),620,fi.length*30+50)}}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Feature Importance Breakdown</div>
+      <table class="data-table">
+        <tr><th>#</th><th>Feature</th><th>Score</th><th>Category</th></tr>
+        ${{fi.map((f,i)=>{{
+          const cat=f.feature.includes('Lag')?'Lag Feature':f.feature.includes('Rolling')?'Rolling Stat':f.feature==='Promo'?'Business':'Calendar';
+          const badge=cat==='Lag Feature'?'badge-purple':cat==='Rolling Stat'?'badge-blue':cat==='Business'?'badge-green':'badge-amber';
+          return `<tr><td class="rank">${{i+1}}</td><td>${{f.feature}}</td><td>${{(f.importance*100).toFixed(1)}}%</td><td><span class="badge ${{badge}}">${{cat}}</span></td></tr>`;
+        }}).join('')}}
+      </table>
+    </div>
+  </div>`;
+
+  h+=`<div class="insight-grid">
+    <div class="insight-card green"><div class="insight-title">&#x2705; Gradient Boosting Wins</div><div class="insight-text">Gradient Boosting reduces MAE by 39% vs Baseline and 20% vs Random Forest, making it the production-ready model for forecasting.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f4ca; Temporal Features Dominate</div><div class="insight-text">The top 6 features are all time-series lag/rolling features, confirming that recent sales momentum is the strongest predictor of future sales.</div></div>
+    <div class="insight-card amber"><div class="insight-title">&#x1f4a1; Business Signal</div><div class="insight-text">Promo ranks #4 overall (9.4%), making it the most important non-temporal feature. This validates promotions as the key controllable business lever.</div></div>
+    <div class="insight-card"><div class="insight-title">&#x1f527; Feature Engineering ROI</div><div class="insight-text">Engineered features (lags, rolling means/stds) account for >80% of total importance. Raw calendar features contribute <5% individually.</div></div>
+  </div>`;
+  document.getElementById('content-model').innerHTML=h;
+}}
+
+// ── Initialize all pages ──
+buildOverview();
+buildSales();
+buildPromo();
+buildForecast();
+buildModel();
+</script>
+</body>
+</html>

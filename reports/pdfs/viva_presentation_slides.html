@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>viva_presentation_slides</title>
+    <style>
+    @page {
+        size: A4;
+        margin: 1in;
+    }
+    body {
+        font-family: "Georgia", "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2em;
+        background-color: #fff;
+    }
+    h1, h2, h3, h4 {
+        font-family: "Arial", sans-serif;
+        color: #2c3e50;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+    }
+    h1 { font-size: 24pt; border-bottom: 2px solid #2c3e50; padding-bottom: 0.2em; }
+    h2 { font-size: 18pt; border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+    h3 { font-size: 14pt; }
+    p { margin-bottom: 1em; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5em;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        text-align: left;
+    }
+    th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    code {
+        font-family: "Courier New", Courier, monospace;
+        background-color: #f4f4f4;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    pre {
+        background-color: #f4f4f4;
+        padding: 1em;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+    pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    blockquote {
+        border-left: 4px solid #ccc;
+        margin: 0;
+        padding-left: 1em;
+        color: #666;
+        font-style: italic;
+    }
+    .page-break {
+        page-break-before: always;
+    }
+    
+    @media screen {
+        body {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 2em;
+            margin-bottom: 2em;
+        }
+    }
+    </style>
+</head>
+<body>
+    <h1>Viva Presentation: Rossmann Sales Forecasting</h1>
+<p><em>This document contains the exact slide titles, bullet points, and speaker notes required to build a 15-slide PowerPoint/Google Slides deck for your 10-15 minute viva presentation.</em></p>
+<hr />
+<h2 class='page-break'>Slide 1: Title Slide</h2>
+<p><strong>Predictive Analytics for Retail Operations</strong>
+<em>A Machine Learning Approach to Rossmann Store Sales Forecasting</em></p>
+<ul>
+<li><strong>Submitted By:</strong> [Your Name]</li>
+<li><strong>Course:</strong> BCA (Final Year AI/ML Project)</li>
+<li><strong>Institution:</strong> [University Name]</li>
+<li><strong>Date:</strong> [Date]</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Good morning respected examiners and faculty members. My final-year project is focused on Predictive Analytics for Retail Operations, specifically utilizing advanced Machine Learning techniques to forecast daily sales for the Rossmann drug store chain.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 2: Problem Statement</h2>
+<p><strong>The Challenge in Retail Forecasting</strong></p>
+<ul>
+<li><strong>The Problem:</strong> Rossmann operates 1,115 stores, each with unique sales patterns influenced by promotions, holidays, and competition.</li>
+<li><strong>The Gap:</strong> Traditional historical average forecasting leads to massive inaccuracies (overstocking or stockouts).</li>
+<li><strong>The Need:</strong> A robust, data-driven machine learning model capable of handling non-linear temporal dynamics.</li>
+<li><strong>The Constraint:</strong> Developing this solution entirely from scratch in an offline Python environment.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Accurate sales forecasting is the backbone of retail profitability. The problem Rossmann faces is that simple historical averages fail to account for complex factors like promotions or school holidays. Our goal is to replace naive guessing with a robust machine learning framework, built entirely from scratch in pure Python.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 3: Objectives</h2>
+<p><strong>Project Goals &amp; Deliverables</strong></p>
+<ul>
+<li><strong>Objective 1:</strong> Build an end-to-end ML pipeline without relying on external libraries (<code>scikit-learn</code>, <code>pandas</code>).</li>
+<li><strong>Objective 2:</strong> Engineer complex temporal features (lags, rolling statistics).</li>
+<li><strong>Objective 3:</strong> Implement Custom Random Forest and Gradient Boosting algorithms.</li>
+<li><strong>Objective 4:</strong> Develop a functional, dependency-free interactive business dashboard.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;The primary objectives were two-fold: First, to achieve high predictive accuracy. Second, to demonstrate deep algorithmic mastery by building these complex tree-based algorithms from mathematical first principles, culminating in a functional business dashboard.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 4: Dataset</h2>
+<p><strong>Rossmann Store Sales Data</strong></p>
+<ul>
+<li><strong>Scope:</strong> 1,115 European drug stores.</li>
+<li><strong>Timeframe:</strong> Jan 2013 to Jul 2015.</li>
+<li><strong>Total Records:</strong> 844,392 daily transactional logs.</li>
+<li><strong>Key Features:</strong>
+<ul>
+<li><code>Sales</code>, <code>Customers</code>, <code>Open</code> status.</li>
+<li><code>Promo</code> (Active promotions).</li>
+<li><code>StateHoliday</code> &amp; <code>SchoolHoliday</code>.</li>
+<li>Store Metadata: <code>StoreType</code> (A, B, C, D) and <code>Assortment</code>.</li>
+</ul>
+</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;We utilized a highly complex dataset comprising over 844,000 records. It integrates daily transaction logs—like footfall and active promotions—with static store metadata, such as the distance to the nearest competitor.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 5: Data Cleaning</h2>
+<p><strong>Ensuring Algorithmic Robustness</strong></p>
+<ul>
+<li><strong>Outlier Removal:</strong> Dropped records where stores were marked &quot;Open&quot; but recorded 0 sales.</li>
+<li><strong>Handling Missing Values:</strong>
+<ul>
+<li>Continuous data (<code>CompetitionDistance</code>) imputed with the dataset <strong>median</strong>.</li>
+<li>Categorical data (<code>Promo2Since</code>) defaulted to 0.</li>
+</ul>
+</li>
+<li><strong>Data Integration:</strong> Merged transaction data with static store metadata using primary keys.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Garbage in equals garbage out. We cleaned the data by dropping anomalous records—such as stores reporting zero sales despite being open—and aggressively imputed missing competition metadata using median values to prevent skewing.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 6: Exploratory Data Analysis (EDA)</h2>
+<p><strong>Key Business Insights</strong></p>
+<ul>
+<li><strong>Promotional Power:</strong> Active promotions drive a massive <strong>~23% uplift</strong> in daily sales universally.</li>
+<li><strong>Seasonal Dominance:</strong> December generates peak revenue due to holiday shopping behaviors.</li>
+<li><strong>Store Typology:</strong>
+<ul>
+<li><strong>Type B:</strong> Highest absolute daily sales.</li>
+<li><strong>Type D:</strong> Highest average spend per customer.</li>
+</ul>
+</li>
+<li><strong>Weekly Trends:</strong> Mondays hold the peak sales volume, while Saturdays drop significantly.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Our EDA uncovered immediate business value. We proved mathematically that active promotions drive a 23% sales uplift. We also mapped strong annual seasonality peaking in December and identified that Store Type B dominates overall revenue.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 7: Feature Engineering</h2>
+<p><strong>Translating Time-Series to Supervised Learning</strong></p>
+<ul>
+<li><strong>Temporal Parsing:</strong> Decomposed string dates into <code>Year</code>, <code>Month</code>, <code>DayOfWeek</code>, <code>IsWeekend</code>.</li>
+<li><strong>Lag Features:</strong>
+<ul>
+<li>Created historical anchors: <code>Sales_Lag_7</code>, <code>Sales_Lag_14</code>, <code>Sales_Lag_30</code>.</li>
+</ul>
+</li>
+<li><strong>Rolling Statistics:</strong>
+<ul>
+<li>Computed short-term momentum: <code>RollingMean_7</code> and <code>RollingStd_7</code>.</li>
+</ul>
+</li>
+<li><strong>Constraint Handling:</strong> Achieved $O(1)$ fast lookups using native Python dictionary hashing.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Machine learning models cannot naturally read dates. We engineered time-series features by calculating 'lags'—such as sales from exactly 14 days prior—and rolling averages to capture short-term momentum. We used Python dictionaries to ensure fast lookups.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 8: Train/Test Split &amp; Sampling</h2>
+<p><strong>Chronological Validation Strategy</strong></p>
+<ul>
+<li><strong>Chronological Split:</strong> Random splitting causes temporal data leakage. We reserved the final 6 weeks (175,084 rows) as a strict chronological test set.</li>
+<li><strong>Deterministic Sampling:</strong>
+<ul>
+<li>Due to pure-Python limitations, the algorithm trained on a stratified sample of 26,773 records.</li>
+<li>Test set was evaluated on the <strong>full</strong> 175,000+ records.</li>
+</ul>
+</li>
+<li><strong>Autoregressive Loop:</strong> Predictions for $T+1$ were fed back into the loop to generate lag features for predicting $T+2$.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;In time-series, random splitting is a fatal flaw. We strictly trained on past data to predict the final 6 weeks. To accommodate the heavy computational load of pure Python, we trained on a 26,000-row sample, but validated against the full 175,000-row test set.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 9: Baseline Model</h2>
+<p><strong>Historical Average Benchmark</strong></p>
+<ul>
+<li><strong>Methodology:</strong> Predicted sales simply by taking the historical mean for a specific store on a specific day of the week.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>$R^2$: 0.7070</li>
+<li>MAE: 1,225.53</li>
+<li>RMSE: 1,653.96</li>
+</ul>
+</li>
+<li><strong>Conclusion:</strong> Serves as the mathematical floor. Any complex ML model must significantly beat an MAE of €1,225 to justify its usage.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;To prove our ML models were actually working, we established a naive baseline: just guessing the historical average for that day of the week. The baseline had an MAE of roughly 1,225 Euros.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 10: Random Forest (Custom Implementation)</h2>
+<p><strong>Bootstrap Aggregation</strong></p>
+<ul>
+<li><strong>Algorithm:</strong> Custom-built ensemble of decision trees.</li>
+<li><strong>Mechanism:</strong> Trains multiple deep trees in parallel on random subsets of data to reduce variance and prevent overfitting.</li>
+<li><strong>Splitting Criterion:</strong> Evaluated nodes mathematically to maximize Mean Squared Error (MSE) reduction.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>$R^2$: 0.8082</li>
+<li>MAE: 932.49</li>
+</ul>
+</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Our first advanced model was a Random Forest, built entirely from scratch. By training multiple decision trees on random subsets of the data and averaging their outputs, we successfully reduced the MAE to 932 Euros.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 11: Gradient Boosting (Custom Implementation)</h2>
+<p><strong>Sequential Error Correction</strong></p>
+<ul>
+<li><strong>Algorithm:</strong> Custom-built boosting architecture.</li>
+<li><strong>Mechanism:</strong> Trees are built sequentially. Tree 2 predicts the <em>errors</em> (pseudo-residuals) made by Tree 1.</li>
+<li><strong>Hyperparameters:</strong> <code>n_estimators = 20</code>, <code>max_depth = 5</code>, <code>learning_rate = 0.2</code>.</li>
+<li><strong>Results:</strong>
+<ul>
+<li>$R^2$: <strong>0.8724</strong></li>
+<li>MAE: <strong>745.88</strong></li>
+</ul>
+</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Our flagship model was the Gradient Boosting algorithm. Unlike Random Forest, this model learns sequentially, aggressively targeting the residual errors of the previous trees. It was our highest-performing architecture.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 12: Results Comparison &amp; Feature Importance</h2>
+<p><strong>Gradient Boosting Wins</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Model</th>
+<th style="text-align:left">MAE (€)</th>
+<th style="text-align:left">RMSE (€)</th>
+<th style="text-align:left">$R^2$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Historical Baseline</td>
+<td style="text-align:left">1,225</td>
+<td style="text-align:left">1,653</td>
+<td style="text-align:left">0.70</td>
+</tr>
+<tr>
+<td style="text-align:left">Random Forest</td>
+<td style="text-align:left">932</td>
+<td style="text-align:left">1,338</td>
+<td style="text-align:left">0.80</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Gradient Boosting</strong></td>
+<td style="text-align:left"><strong>745</strong></td>
+<td style="text-align:left"><strong>1,091</strong></td>
+<td style="text-align:left"><strong>0.87</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Top 3 Features:</strong></p>
+<ol>
+<li><code>Sales_Lag_14</code> (Captures bi-weekly rhythm)</li>
+<li><code>RollingMean_7</code> (Captures immediate momentum)</li>
+<li><code>Promo</code> (Highest non-temporal business driver)</li>
+</ol>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Comparing the models, Gradient Boosting reduced the baseline error by a massive 39%, achieving an R-squared of 0.87. We also found that the 14-day sales lag and active promotions were the most dominant predictors of future sales.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 13: Dashboard Architecture</h2>
+<p><strong>Deploying Actionable Insights</strong></p>
+<ul>
+<li><strong>Requirement:</strong> A highly interactive, zero-dependency business intelligence UI.</li>
+<li><strong>Implementation:</strong> Self-contained HTML/JS dashboard rendering pre-computed metrics.</li>
+<li><strong>Key Modules:</strong>
+<ul>
+<li><strong>Executive Overview:</strong> High-level KPIs and revenue trackers.</li>
+<li><strong>Forecast Center:</strong> Autoregressive simulator comparing test actuals to predicted trends.</li>
+<li><strong>Promo Insights:</strong> Quantifying ROI across Store Types.</li>
+</ul>
+</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;Machine learning is useless if business stakeholders can't access it. We built a fully functional, self-contained HTML dashboard that visualizes these KPIs, allowing managers to see precise promo ROI and forecast trajectories without any software installations.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 14: Conclusion</h2>
+<p><strong>Project Summary</strong></p>
+<ul>
+<li><strong>Success:</strong> Proved that state-of-the-art predictive accuracy ($R^2$ = 0.87) can be achieved using foundational mathematics without reliance on heavy external libraries like <code>scikit-learn</code> or <code>XGBoost</code>.</li>
+<li><strong>Business Value:</strong> Accurate forecasting allows Rossmann to reduce stockouts, optimize staff scheduling, and strategically deploy promotional campaigns in Store Type A for maximum ROI.</li>
+<li><strong>Technical Growth:</strong> Mastered data structures, recursive tree building, and autoregressive time-series loops.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;To conclude, we successfully engineered a highly accurate forecasting system from algorithmic first principles. By reducing the prediction error to just 745 Euros, Rossmann can confidently optimize inventory and staffing.&quot;</p>
+</blockquote>
+<hr />
+<h2 class='page-break'>Slide 15: Future Scope</h2>
+<p><strong>Next Steps for Expansion</strong></p>
+<ul>
+<li><strong>Cloud Deployment:</strong> Migrate the algorithms to leverage vectorized C-backends (<code>pandas</code>, <code>numpy</code>) for full 844k dataset training.</li>
+<li><strong>Hyperparameter Optimization:</strong> Implement Grid Search CV for optimal tree depth and learning rates.</li>
+<li><strong>External Data Integration:</strong> Incorporate macro-economic variables, local weather APIs, and Google Trends search volume.</li>
+<li><strong>Deep Learning:</strong> Explore LSTM (Long Short-Term Memory) networks for advanced sequential memory.</li>
+</ul>
+<p><strong>🗣 Speaker Notes:</strong></p>
+<blockquote>
+<p>&quot;In the future, migrating this logic to a cloud environment would allow us to train on the full 844,000 row dataset using optimized libraries. Furthermore, integrating local weather data or Deep Learning algorithms like LSTMs could push the accuracy even higher. Thank you, I am now open to questions.&quot;</p>
+</blockquote>
+
+    <script>
+        // Auto-print prompt when opened (optional, disabled for now)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

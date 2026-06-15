@@ -14,7 +14,7 @@ Output:
 import csv
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
 INPUT_FILE = os.path.join(DATA_DIR, "train_store_features.csv")
 TRAIN_FILE = os.path.join(DATA_DIR, "train_dataset.csv")
 TEST_FILE = os.path.join(DATA_DIR, "test_dataset.csv")

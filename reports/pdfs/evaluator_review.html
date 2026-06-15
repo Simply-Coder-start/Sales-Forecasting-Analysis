@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>evaluator_review</title>
+    <style>
+    @page {
+        size: A4;
+        margin: 1in;
+    }
+    body {
+        font-family: "Georgia", "Times New Roman", serif;
+        font-size: 12pt;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2em;
+        background-color: #fff;
+    }
+    h1, h2, h3, h4 {
+        font-family: "Arial", sans-serif;
+        color: #2c3e50;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+    }
+    h1 { font-size: 24pt; border-bottom: 2px solid #2c3e50; padding-bottom: 0.2em; }
+    h2 { font-size: 18pt; border-bottom: 1px solid #eee; padding-bottom: 0.2em; }
+    h3 { font-size: 14pt; }
+    p { margin-bottom: 1em; }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5em;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        text-align: left;
+    }
+    th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    code {
+        font-family: "Courier New", Courier, monospace;
+        background-color: #f4f4f4;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+    pre {
+        background-color: #f4f4f4;
+        padding: 1em;
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+    pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    blockquote {
+        border-left: 4px solid #ccc;
+        margin: 0;
+        padding-left: 1em;
+        color: #666;
+        font-style: italic;
+    }
+    .page-break {
+        page-break-before: always;
+    }
+    
+    @media screen {
+        body {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 2em;
+            margin-bottom: 2em;
+        }
+    }
+    </style>
+</head>
+<body>
+    <h1>University Examiner Review: Rossmann Sales Forecasting Project</h1>
+<h2>1. Critical Issues &amp; Factual Inconsistencies</h2>
+<ol>
+<li><strong>Dataset Size vs. Training Size Discrepancy:</strong> The abstract and dataset description claim the use of 844,392 records. However, the actual Python implementation used a deterministically sampled subset (13,387 rows for Random Forest, 26,773 rows for Gradient Boosting) due to the pure-Python execution constraint. Claiming the model was trained on the full dataset is a significant factual inaccuracy.</li>
+<li><strong>Library vs. Custom Implementation Misrepresentation:</strong> The Literature Review mentions XGBoost and LightGBM. While theoretically accurate, the actual implementation was a custom, vanilla Python <code>GradientBoostingRegressor</code> built from scratch without external dependencies (<code>scikit-learn</code>, <code>xgboost</code>). Failing to state this undermines the technical achievement of building the algorithm from scratch and misrepresents the methodology.</li>
+<li><strong>Hyperparameter Tuning Omission:</strong> The report does not mention that hyperparameter tuning was entirely bypassed. The models were run with fixed parameters (e.g., <code>n_estimators=20</code>, <code>max_depth=5</code>).</li>
+<li><strong>Forecasting Methodology Unexplained:</strong> The report states the model predicts sales &quot;up to six weeks in advance,&quot; but fails to explain the complex autoregressive (recursive) loop required to project lag features (<code>Sales_Lag_14</code>) into the future.</li>
+</ol>
+<h2>2. Recommended Fixes</h2>
+<ul>
+<li><strong>Embrace the Constraint:</strong> Turn the inability to use <code>scikit-learn</code> into a massive positive. Explicitly state that &quot;due to strict offline environment constraints, the Gradient Boosting algorithm was engineered entirely from scratch using the Python Standard Library.&quot; This shows deep algorithmic understanding, highly valued in BCA AI/ML projects.</li>
+<li><strong>Clarify the Sampling Strategy:</strong> Explicitly document the stratified sampling technique used to bypass the computational limits of native Python for loop execution.</li>
+<li><strong>Detail the Autoregressive Loop:</strong> Add a subsection explaining how $T+1$ predictions are fed back into the rolling and lag feature calculations to predict $T+2$.</li>
+</ul>
+<h2>3. Missing Content Expected in BCA Final-Year Projects</h2>
+<ul>
+<li><strong>System Architecture:</strong> A high-level overview of how the data flows from raw CSVs $\rightarrow$ Preprocessing $\rightarrow$ Pure Python Model $\rightarrow$ Streamlit/HTML Dashboard.</li>
+<li><strong>Workflow / Flowchart Description:</strong> Textual representation of the algorithmic steps.</li>
+<li><strong>Hardware/Software Environment Setup:</strong> Detailing the offline sandbox nature.</li>
+<li><strong>Limitations Section:</strong> Directly addressing the lack of hyperparameter tuning and full dataset utilization.</li>
+</ul>
+<h2>4. Potential Viva Questions You May Be Asked</h2>
+<ol>
+<li><em>&quot;You mentioned you didn't use scikit-learn or XGBoost. Can you explain the mathematical difference between your Random Forest and Gradient Boosting implementations?&quot;</em></li>
+<li><em>&quot;Your model heavily relies on <code>Sales_Lag_14</code>. How do you predict day 15 if you don't have the actual sales data for day 1?&quot;</em> (Answer: Autoregressive recursive forecasting—using your predictions as the actuals to roll forward).</li>
+<li><em>&quot;Why did you sample only 26,000 rows out of 844,000, and how does this impact the model's ability to capture yearly seasonality?&quot;</em></li>
+<li><em>&quot;What is the loss function used in your Gradient Boosting implementation, and how do you calculate the pseudo-residuals?&quot;</em></li>
+</ol>
+<h2>5. Grading</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Category</th>
+<th style="text-align:center">Score / 10</th>
+<th style="text-align:left">Remarks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Problem Statement</td>
+<td style="text-align:center">9/10</td>
+<td style="text-align:left">Clear and well-defined business problem.</td>
+</tr>
+<tr>
+<td style="text-align:left">Dataset Selection</td>
+<td style="text-align:center">9/10</td>
+<td style="text-align:left">Excellent, high-complexity Kaggle dataset.</td>
+</tr>
+<tr>
+<td style="text-align:left">Data Cleaning</td>
+<td style="text-align:center">8/10</td>
+<td style="text-align:left">Solid approach to handling open/closed days and missing metadata.</td>
+</tr>
+<tr>
+<td style="text-align:left">EDA</td>
+<td style="text-align:center">9/10</td>
+<td style="text-align:left">Uncovered highly actionable business metrics (promo lift, store types).</td>
+</tr>
+<tr>
+<td style="text-align:left">Feature Eng.</td>
+<td style="text-align:center">10/10</td>
+<td style="text-align:left">Creating recursive lags without pandas is a huge technical achievement.</td>
+</tr>
+<tr>
+<td style="text-align:left">Modeling</td>
+<td style="text-align:center">7/10</td>
+<td style="text-align:left">(Initial Report) 7/10 because the report hid the custom Python implementation. With the custom implementation acknowledged, it's a 10/10 technical flex.</td>
+</tr>
+<tr>
+<td style="text-align:left">Evaluation</td>
+<td style="text-align:center">8/10</td>
+<td style="text-align:left">Solid use of MAE, RMSE, and $R^2$.</td>
+</tr>
+<tr>
+<td style="text-align:left">Dashboard</td>
+<td style="text-align:center">9/10</td>
+<td style="text-align:left">Impressive pivot to a dependency-free HTML dashboard using inline SVGs.</td>
+</tr>
+<tr>
+<td style="text-align:left">Documentation</td>
+<td style="text-align:center">6/10</td>
+<td style="text-align:left">Initial report had factual inconsistencies regarding dataset size and libraries.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Final Academic Score:</strong> 8.3 / 10 (A-)<br />
+<strong>Final Portfolio Score:</strong> 9.0 / 10 (Highly impressive due to pure Python implementation).</p>
+
+    <script>
+        // Auto-print prompt when opened (optional, disabled for now)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

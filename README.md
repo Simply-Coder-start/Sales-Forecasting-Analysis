@@ -1,4 +1,4 @@
-# 📈 Rossmann Store Sales Forecasting
+# 📈 Rossmann Store Sales Forecasting (Pure Python)
 
 <div align="center">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python Badge"/>
@@ -9,126 +9,146 @@
 
 <br/>
 
-> **A custom-built Gradient Boosting predictive framework engineered from scratch without relying on standard ML libraries like `scikit-learn` or `xgboost`.**
+> **An end-to-end Machine Learning pipeline and custom Gradient Boosting predictive framework engineered entirely from scratch using only the Python Standard Library (no `scikit-learn`, `pandas`, or `xgboost`).**
 
 ---
 
-## 🎯 Project Overview
-This project presents a comprehensive machine learning pipeline designed to predict daily sales across 1,115 Rossmann drug stores. A unique constraint of this research was the utilization of a strict offline development environment. The entire predictive analytics framework—including data preprocessing, feature engineering, and modeling—was engineered from scratch utilizing the Python Standard Library.
+## 🎯 Executive Summary
+This repository presents a demand forecasting pipeline designed to predict daily sales across 1,115 Rossmann drug stores. A unique engineering constraint of this project was developing the solution in a strict offline, sandboxed environment. Consequently, the entire predictive analytics framework—including data cleaning, feature engineering, and model training—was implemented from first principles using the **Python Standard Library**.
+
+* **Core Achievement:** Developed a custom sequential Gradient Boosting Regressor that reduces baseline Mean Absolute Error (MAE) by **39.1%**, achieving an $R^2$ of **0.8724** on the hold-out test set.
+* **Hashed Temporal Engine:** Built a custom time-series engineering database utilizing dictionary lookups to achieve $O(1)$ fast lookups for lag and rolling calculations.
+* **Autoregressive Forecasting:** Implemented a multi-step chronological recursive loop that rolls predictions forward to forecast sales up to 6 weeks in advance.
+
+For detailed mathematical formulations and architectural details, see the **[Technical Report](reports/technical_report.md)**.
 
 ---
 
-## 📊 Dataset & Verified Metrics
-The project utilizes the verified Rossmann Store Sales dataset. All anomalous or non-operational records were carefully cleaned prior to modeling.
-
-- **Raw Records:** 1,017,209
-- **Cleaned Target Records:** 844,392
-- **Train Set Size:** 669,308
-- **Hold-out Test Size:** 175,084
-
-### 💡 Key Business Findings
-- **Promotional Power:** Active promotions drive a massive **38.77% uplift** in daily sales universally.
-- **Top Predictor:** The most important feature for predicting future sales is **`Sales_Lag_14`** (Sales from exactly two weeks prior), capturing bi-weekly cyclic behavior.
+## 💡 Key Business Findings
+* **Promotional Uplift:** Active promotions generate a massive **38.77% average sales lift** per day across the store network. Store Type A benefits most (+43.0% lift), while Store Type B experiences the lowest relative lift (+18.2%).
+* **Temporal Driver:** The most important predictor of future sales is `Sales_Lag_14` (sales from exactly 14 days ago), capturing bi-weekly cyclic consumer purchasing patterns.
+* **Assortment Impact:** Stores offering "Extra" assortment levels generate 30.4% higher average daily sales than those carrying only "Basic" assortments.
 
 ---
 
-## 🤖 Custom Machine Learning Architecture
-Three models were evaluated. The Random Forest and Gradient Boosting regressors were built from algorithmic first principles in pure Python, bypassing traditional libraries to demonstrate a deep understanding of ensemble tree mechanics.
+## 🤖 Model Performance
 
-| Model | Mean Absolute Error (MAE) | Root Mean Squared Error (RMSE) | R-squared (R²) |
-| :--- | :--- | :--- | :--- |
-| **Historical Baseline** | 1,225.53 | 1,653.96 | 0.7070 |
-| **Random Forest** | 932.49 | 1,338.22 | 0.8082 |
-| **Gradient Boosting** | **745.88** | **1,091.35** | **0.8724** |
+The custom-built models were trained on chronological subsets and validated against a strict hold-out test set (final 6 weeks of data, 175,084 records).
 
----
-
-## 🚀 Demo
-The project includes a complete Streamlit dashboard. Screenshots and source code are available in this repository.
+| Model | Mean Absolute Error (MAE) | Root Mean Squared Error (RMSE) | R-squared ($R^2$) |
+| :--- | :---: | :---: | :---: |
+| **Historical Baseline** | €1,225.53 | €1,653.96 | 0.7070 |
+| **Custom Random Forest** | €932.49 | €1,338.22 | 0.8082 |
+| **Custom Gradient Boosting** | **€745.88** | **€1,091.35** | **0.8724** |
 
 ---
 
-## 🖥️ Interactive Dashboard Showcase
+## 🖥️ Deliverables & Interactive Dashboards
 
-The predictive models and EDA insights have been fully operationalized into an enterprise-grade Streamlit application. The dashboard runs instantaneously by leveraging an optimized JSON data architecture.
+This project includes two fully operational front-end analytics dashboards:
+
+### 1. Zero-Dependency HTML Dashboard (`dashboard/rossmann_dashboard.html`)
+A fully interactive, client-side business intelligence dashboard rendering pre-computed metrics and forecast simulators. By leveraging inline SVG graphics and embedded JSON data, it runs instantaneously in any web browser without requiring a backend server or external dependencies.
+* **Accessing the Dashboard:** Simply clone the repository and open [dashboard/rossmann_dashboard.html](dashboard/rossmann_dashboard.html) in your browser.
+
+### 2. Multi-Page Streamlit Application (`streamlit_app/`)
+An enterprise-grade forecasting dashboard containing visual KPI cards, sales analytics pages, promotion insights, and an interactive forecasting simulator.
+* **Run command:** `streamlit run streamlit_app/main.py`
 
 <div align="center">
-
-### 1. Executive Overview
-<img src="screenshots/executive_overview.png" width="900" alt="Executive Overview"/>
-<br/><i>High-level performance metrics and executive summaries.</i><br/><br/>
-
-### 2. Sales Analytics
-<img src="screenshots/sales_analytics.png" width="900" alt="Sales Analytics"/>
-<br/><i>In-depth analysis of store types, assortments, and competition distance.</i><br/><br/>
-
-### 3. Promotion Insights
-<img src="screenshots/promotion_insights.png" width="900" alt="Promotion Insights"/>
-<br/><i>Visualizing the massive 38.77% sales lift generated by promotional events.</i><br/><br/>
-
-### 4. Forecast Center
-<img src="screenshots/forecast_center.png" width="900" alt="Forecast Simulator"/>
-<br/><i>Interactive simulation engine projecting future sales using an autoregressive loop.</i><br/><br/>
-
-### 5. Model Insights
-<img src="screenshots/model_insights.png" width="900" alt="Model Insights"/>
-<br/><i>Feature importance breakdown explaining the core drivers of the GBM predictions.</i><br/><br/>
-
+  <img src="screenshots/executive_overview.png" width="900" alt="Executive Overview"/>
+  <br/><i>Executive Overview Dashboard</i><br/><br/>
+  <img src="screenshots/forecast_center.png" width="900" alt="Forecast Center"/>
+  <br/><i>Autoregressive Forecast Projection Simulator</i><br/><br/>
 </div>
 
 ---
 
 ## 🛠️ Technology Stack
-* **Language:** Pure Python (No `pandas`, `scikit-learn`, `xgboost` in the ML backend)
-* **Frontend:** Streamlit 
-* **Data Visualization:** Plotly
-* **Data Pipeline:** Pre-aggregated JSON payload builder for maximum frontend performance
+* **Core ML Engine:** Pure Python 3.x (Standard Library modules: `csv`, `math`, `collections`, `datetime`, `pickle`, `json`)
+* **Interactive Frontend:** Streamlit
+* **Data Visualization:** Plotly & HTML5 Inline SVGs
+* **Validation & Logging:** Automated feature leakage checks and chronological boundary testing.
 
 ---
 
-## 📂 Folder Structure
+## 📂 Repository Structure
+
 ```text
 Sales-Forecasting-Analysis/
-├── data/                  # Source CSVs and aggregated dashboard JSON
-├── docs/                  # Project PPT and architecture diagrams
-├── notebooks/             # Step-by-step Jupyter notebooks (Cleaning to Modeling)
-├── reports/               # Final academic report
-├── screenshots/           # Application visuals
-├── streamlit_app/         # Multi-page interactive frontend
-│   ├── main.py
-│   └── pages/             # Individual dashboard views
-└── [Python Scripts]       # Core ML backend (Data loading, Tree Building, Ensembling)
+├── dashboard/               # Interactive frontend deliverables
+│   └── rossmann_dashboard.html # Zero-dependency HTML/JS dashboard (Tracked!)
+├── data/                    # Dataset folder (Ignored from Git for size limits)
+├── docs/                    # Architecture charts & academic archives
+│   ├── archive/             # Preserved academic papers & slides (for personal reference)
+│   │   ├── final_academic_report.md
+│   │   ├── viva_prep_guide.md
+│   │   ├── evaluator_review.md
+│   │   └── viva_presentation_slides.md
+│   └── architecture.png     # Pipeline flowchart
+├── notebooks/               # Step-by-step Jupyter notebooks (Cleaning to Modeling)
+│   ├── 01_Data_Loading_and_Cleaning.ipynb
+│   ├── 02_EDA.ipynb
+│   ├── 03_Feature_Engineering.ipynb
+│   ├── 04_Model_Development.ipynb
+│   └── 05_Forecasting_and_Dashboard.ipynb
+├── reports/                 # Technical documentation & HTML EDA reports
+│   ├── technical_report.md  # Deep dive into mathematics and pipeline design
+│   └── eda_report.html      # Self-contained HTML EDA report
+├── screenshots/             # Visual dashboard assets
+├── src/                     # Modular source code
+│   ├── data_loader.py       # Data loading and metadata merge
+│   ├── data_cleaning.py     # Missing value imputation & outlier handling
+│   ├── eda_analysis.py      # Statistical EDA computing & HTML report compilation
+│   ├── feature_engineering.py# Temporal splits, O(1) lag hashing & rolling metrics
+│   ├── leakage_validation.py# Feature validation & leakage checking
+│   ├── train_test_split.py  # Chronological data splitting
+│   ├── baseline_model.py    # Historical baseline builder
+│   ├── random_forest.py     # Custom decision tree & Random Forest regressor
+│   ├── xgboost_model.py     # Custom sequential Gradient Boosting regressor
+│   └── generate_dashboard_data.py # Dashboard JSON pre-aggregator
+├── streamlit_app/           # Interactive Streamlit application
+├── requirements.txt         # Package dependencies
+└── LICENSE.txt              # Project License
 ```
 
 ---
 
 ## 🚀 How to Run Locally
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/Simply-Coder-start/Sales-Forecasting-Analysis.git
-   cd Sales-Forecasting-Analysis
-   ```
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Simply-Coder-start/Sales-Forecasting-Analysis.git
+cd Sales-Forecasting-Analysis
+```
 
-2. **Install Dependencies**
-   *(Note: The core ML engine uses pure Python, but the dashboard requires Streamlit & Plotly)*
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 2. Download the Dataset
+The raw transaction files exceed GitHub's size limit and are ignored by Git. 
+1. Download the dataset files (`train.csv` and `store.csv`) directly from the [Kaggle Rossmann Store Sales Competition](https://www.kaggle.com/c/rossmann-store-sales/data).
+2. Place the CSV files directly inside the `data/` directory.
 
-3. **Launch the Dashboard**
-   ```bash
-   streamlit run streamlit_app/main.py
-   ```
+### 3. Install Dependencies
+*(Note: The core ML engine runs in pure Python, but the visual dashboards require Streamlit, Plotly, and pandas)*
+```bash
+pip install -r requirements.txt
+```
 
----
+### 4. Run the Pipeline
+You can run the steps sequentially to clean, engineer, train, and generate dashboard data:
+```bash
+python src/data_loader.py
+python src/data_cleaning.py
+python src/eda_analysis.py
+python src/feature_engineering.py
+python src/leakage_validation.py
+python src/train_test_split.py
+python src/xgboost_model.py
+python src/generate_dashboard_data.py
+```
 
-## 🔮 Future Improvements
-- Implement automated hyperparameter tuning for the custom GBM architecture.
-- Integrate external weather datasets to further explain regional sales variances.
-- Deploy the Streamlit application to a cloud provider (e.g., AWS EC2 or Streamlit Community Cloud) for global stakeholder access.
-
----
-
-## 👨‍💻 Author Section
-Built with ❤️ and pure Python.
+### 5. Launch the Dashboards
+* **To open the HTML dashboard:** Double click `dashboard/rossmann_dashboard.html` to run in any browser.
+* **To run the Streamlit app:** 
+  ```bash
+  streamlit run streamlit_app/main.py
+  ```
